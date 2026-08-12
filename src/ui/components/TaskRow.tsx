@@ -2,7 +2,8 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '@/core/task.types';
 import { isOverdue } from '@/core/task.types';
-import { PriorityDot } from './PriorityDot';
+import { CheckIcon, DragHandleIcon } from '@/ui/icons';
+import { PriorityFlag } from './PriorityFlag';
 
 interface TaskRowProps {
   task: Task;
@@ -21,7 +22,7 @@ export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.6 : 1,
+        opacity: isDragging ? 0.55 : 1,
         listStyle: 'none',
       }}
     >
@@ -29,10 +30,10 @@ export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 10,
-          padding: '12px 8px',
+          gap: 12,
+          padding: '13px 4px',
           borderBottom: '1px solid var(--color-border)',
-          background: 'var(--color-surface)',
+          background: isDragging ? 'var(--color-surface-raised)' : 'var(--color-surface)',
         }}
       >
         <button
@@ -40,23 +41,21 @@ export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
           aria-label={completed ? 'Mark as not completed' : 'Mark as completed'}
           onClick={() => onToggleComplete(task.id)}
           style={{
-            width: 26,
-            height: 26,
-            minWidth: 26,
+            width: 24,
+            height: 24,
+            minWidth: 24,
             borderRadius: '50%',
-            border: `2px solid ${completed ? 'var(--color-success)' : 'var(--color-border)'}`,
+            border: `1.75px solid ${completed ? 'var(--color-success)' : 'var(--color-border-strong)'}`,
             background: completed ? 'var(--color-success)' : 'transparent',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            transition: 'background-color 0.15s ease, border-color 0.15s ease',
+            flexShrink: 0,
           }}
         >
-          {completed && (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 13l4 4L19 7" stroke="white" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
+          {completed && <CheckIcon width={13} height={13} stroke="white" />}
         </button>
 
         <button
@@ -71,7 +70,7 @@ export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
             padding: 0,
             display: 'flex',
             flexDirection: 'column',
-            gap: 2,
+            gap: 3,
             minWidth: 0,
           }}
         >
@@ -80,6 +79,7 @@ export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
               color: completed ? 'var(--color-text-muted)' : 'var(--color-text)',
               textDecoration: completed ? 'line-through' : 'none',
               fontSize: 15,
+              fontWeight: 450,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -88,10 +88,10 @@ export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
             {task.title}
           </span>
           {(task.dueDate || task.priority !== 'none') && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: overdue ? 'var(--color-danger)' : 'var(--color-text-muted)' }}>
-              <PriorityDot priority={task.priority} />
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5 }}>
+              <PriorityFlag priority={task.priority} />
               {task.dueDate && (
-                <span>
+                <span style={{ color: overdue ? 'var(--color-danger)' : 'var(--color-text-muted)', fontWeight: overdue ? 600 : 400 }}>
                   {task.dueDate}
                   {task.dueTime ? ` · ${task.dueTime}` : ''}
                 </span>
@@ -109,19 +109,14 @@ export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
             cursor: 'grab',
             border: 'none',
             background: 'none',
-            color: 'var(--color-text-muted)',
+            color: 'var(--color-text-faint)',
             padding: 4,
             touchAction: 'none',
+            display: 'flex',
+            flexShrink: 0,
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <circle cx="8" cy="6" r="1.6" />
-            <circle cx="8" cy="12" r="1.6" />
-            <circle cx="8" cy="18" r="1.6" />
-            <circle cx="16" cy="6" r="1.6" />
-            <circle cx="16" cy="12" r="1.6" />
-            <circle cx="16" cy="18" r="1.6" />
-          </svg>
+          <DragHandleIcon />
         </button>
       </div>
     </li>

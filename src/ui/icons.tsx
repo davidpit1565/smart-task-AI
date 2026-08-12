@@ -1,0 +1,95 @@
+import type { SVGProps } from 'react';
+
+/**
+ * Small, consistent line-icon set (24x24, 1.75 stroke) so the app has one
+ * coherent visual voice instead of mixed emoji glyphs across platforms.
+ */
+
+type IconProps = SVGProps<SVGSVGElement>;
+
+const base: IconProps = {
+  width: 22,
+  height: 22,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.75,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  'aria-hidden': true,
+};
+
+export function SunIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+    </svg>
+  );
+}
+
+export function InboxIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 12.5V6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6.5" />
+      <path d="M4 12.5h4.2l1 2h5.6l1-2H20" />
+      <path d="M4 12.5V18a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5.5" />
+    </svg>
+  );
+}
+
+export function CalendarIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+      <path d="M8 3v4M16 3v4M3.5 10h17" />
+    </svg>
+  );
+}
+
+export function ProjectsIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3.5 8.2c0-.94.76-1.7 1.7-1.7h4.3l1.6 2h7.2c.94 0 1.7.76 1.7 1.7v7.1c0 .94-.76 1.7-1.7 1.7H5.2c-.94 0-1.7-.76-1.7-1.7z" />
+    </svg>
+  );
+}
+
+export function MoreIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="5.2" cy="12" r="1.5" />
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="18.8" cy="12" r="1.5" />
+    </svg>
+  );
+}
+
+export function CheckIcon(props: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2.4} {...props}>
+      <path d="M5 12.5l4.2 4.2L19 6.8" />
+    </svg>
+  );
+}
+
+export function DragHandleIcon(props: IconProps) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+      <circle cx="9" cy="6" r="1.5" />
+      <circle cx="9" cy="12" r="1.5" />
+      <circle cx="9" cy="18" r="1.5" />
+      <circle cx="15" cy="6" r="1.5" />
+      <circle cx="15" cy="12" r="1.5" />
+      <circle cx="15" cy="18" r="1.5" />
+    </svg>
+  );
+}
+
+export function FlagIcon(props: IconProps) {
+  return (
+    <svg {...base} fill="currentColor" stroke="none" {...props}>
+      <path d="M6 2.5a.75.75 0 0 0-.75.75v18a.75.75 0 0 0 1.5 0v-6.02c1.1-.42 2.2-.63 3.3-.63 1.32 0 2.4.42 3.6.86 1.1.4 2.3.85 3.65.85 1.02 0 2.03-.24 3.05-.72a.75.75 0 0 0 .4-.72V5.1a.75.75 0 0 0-1.1-.66c-.9.47-1.75.68-2.6.68-1.12 0-2.1-.37-3.2-.8-1.15-.44-2.4-.92-3.9-.92-1.14 0-2.2.24-3.25.68V3.25A.75.75 0 0 0 6 2.5z" />
+    </svg>
+  );
+}

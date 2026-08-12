@@ -1,0 +1,150 @@
+import { useState, type CSSProperties } from 'react';
+import type { Priority, Task } from '@/core/task.types';
+import { PRIORITIES } from '@/core/task.types';
+import { useTranslation } from '@/i18n/LanguageContext';
+
+interface TaskDetailPanelProps {
+  task: Task;
+  onSave(id: string, patch: Partial<Task>): void;
+  onDelete(id: string): void;
+  onClose(): void;
+}
+
+export function TaskDetailPanel({ task, onSave, onDelete, onClose }: TaskDetailPanelProps) {
+  const { t } = useTranslation();
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description);
+  const [notes, setNotes] = useState(task.notes);
+  const [dueDate, setDueDate] = useState(task.dueDate ?? '');
+  const [dueTime, setDueTime] = useState(task.dueTime ?? '');
+  const [deadline, setDeadline] = useState(task.deadline ?? '');
+  const [priority, setPriority] = useState<Priority>(task.priority);
+
+  function save() {
+    onSave(task.id, {
+      title: title.trim() || task.title,
+      description,
+      notes,
+      dueDate: dueDate || null,
+      dueTime: dueTime || null,
+      deadline: deadline || null,
+      priority,
+    });
+    onClose();
+  }
+
+  const fieldStyle: CSSProperties = {
+    width: '100%',
+    padding: '8px 10px',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--color-border)',
+    background: 'var(--color-surface)',
+    color: 'var(--color-text)',
+    fontSize: 14,
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.4)',
+        display: 'flex',
+        alignItems: 'flex-end',
+        zIndex: 50,
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'var(--color-surface-raised)',
+          borderRadius: '20px 20px 0 0',
+          padding: 20,
+          width: '100%',
+          maxWidth: 720,
+          marginInline: 'auto',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+        }}
+      >
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          style={{ ...fieldStyle, fontSize: 18, fontWeight: 600 }}
+        />
+
+        <label>
+          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.description')}</div>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} style={fieldStyle} />
+        </label>
+
+        <label>
+          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.notes')}</div>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} style={fieldStyle} />
+        </label>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <label>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.dueDate')}</div>
+            <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} style={fieldStyle} />
+          </label>
+          <label>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.dueTime')}</div>
+            <input type="time" value={dueTime} onChange={(e) => setDueTime(e.target.value)} style={fieldStyle} />
+          </label>
+        </div>
+
+        <label>
+          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.deadline')}</div>
+          <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} style={fieldStyle} />
+        </label>
+
+        <label>
+          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.priority')}</div>
+          <select value={priority} onChange={(e) => setPriority(e.target.value as Priority)} style={fieldStyle}>
+            {PRIORITIES.map((p) => (
+              <option key={p} value={p}>
+                {t(`task.priority.${p}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={() => {
+              onDelete(task.id);
+              onClose();
+            }}
+            style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer' }}
+          >
+            {t('task.detail.delete')}
+          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '8px 14px', color: 'var(--color-text)', cursor: 'pointer' }}
+            >
+              {t('task.detail.close')}
+            </button>
+            <button
+              type="button"
+              onClick={save}
+              style={{ background: 'var(--color-accent)', border: 'none', borderRadius: 'var(--radius-md)', padding: '8px 14px', color: 'var(--color-accent-contrast)', fontWeight: 600, cursor: 'pointer' }}
+            >
+              {t('task.detail.save')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -18,7 +18,7 @@ export function InboxScreen({ tasks, onAdd, onToggleComplete, onOpen, onReorder 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <h1 style={{ fontSize: 22, margin: '16px 16px 0' }}>{t('inbox.title')}</h1>
+      <h1 style={{ fontSize: 23, margin: '20px 16px 4px' }}>{t('inbox.title')}</h1>
       <QuickAddBar onAdd={onAdd} />
       <div style={{ padding: '0 8px' }}>
         <TaskList tasks={inboxTasks} onToggleComplete={onToggleComplete} onOpen={onOpen} onReorder={onReorder} emptyMessage={t('inbox.empty')} />

@@ -35,12 +35,22 @@ export function TaskDetailPanel({ task, onSave, onDelete, onClose }: TaskDetailP
 
   const fieldStyle: CSSProperties = {
     width: '100%',
-    padding: '8px 10px',
-    borderRadius: 'var(--radius-md)',
+    padding: '9px 11px',
+    borderRadius: 'var(--radius-sm)',
     border: '1px solid var(--color-border)',
-    background: 'var(--color-surface)',
+    background: 'var(--color-bg)',
     color: 'var(--color-text)',
     fontSize: 14,
+    transition: 'border-color 0.15s ease',
+  };
+
+  const labelStyle: CSSProperties = {
+    fontSize: 11.5,
+    fontWeight: 600,
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
+    color: 'var(--color-text-faint)',
+    marginBottom: 6,
   };
 
   return (
@@ -61,8 +71,9 @@ export function TaskDetailPanel({ task, onSave, onDelete, onClose }: TaskDetailP
         onClick={(e) => e.stopPropagation()}
         style={{
           background: 'var(--color-surface-raised)',
-          borderRadius: '20px 20px 0 0',
-          padding: 20,
+          borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+          boxShadow: 'var(--shadow-modal)',
+          padding: '10px 20px 20px',
           width: '100%',
           maxWidth: 720,
           marginInline: 'auto',
@@ -70,43 +81,48 @@ export function TaskDetailPanel({ task, onSave, onDelete, onClose }: TaskDetailP
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          gap: 14,
+          gap: 16,
         }}
       >
+        <div
+          aria-hidden="true"
+          style={{ width: 36, height: 4, borderRadius: 999, background: 'var(--color-border-strong)', marginInline: 'auto' }}
+        />
+
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          style={{ ...fieldStyle, fontSize: 18, fontWeight: 600 }}
+          style={{ ...fieldStyle, fontSize: 19, fontWeight: 650, border: 'none', background: 'none', padding: '2px 0' }}
         />
 
         <label>
-          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.description')}</div>
+          <div style={labelStyle}>{t('task.detail.description')}</div>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} style={fieldStyle} />
         </label>
 
         <label>
-          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.notes')}</div>
+          <div style={labelStyle}>{t('task.detail.notes')}</div>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} style={fieldStyle} />
         </label>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <label>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.dueDate')}</div>
+            <div style={labelStyle}>{t('task.detail.dueDate')}</div>
             <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} style={fieldStyle} />
           </label>
           <label>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.dueTime')}</div>
+            <div style={labelStyle}>{t('task.detail.dueTime')}</div>
             <input type="time" value={dueTime} onChange={(e) => setDueTime(e.target.value)} style={fieldStyle} />
           </label>
         </div>
 
         <label>
-          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.deadline')}</div>
+          <div style={labelStyle}>{t('task.detail.deadline')}</div>
           <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} style={fieldStyle} />
         </label>
 
         <label>
-          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{t('task.detail.priority')}</div>
+          <div style={labelStyle}>{t('task.detail.priority')}</div>
           <select value={priority} onChange={(e) => setPriority(e.target.value as Priority)} style={fieldStyle}>
             {PRIORITIES.map((p) => (
               <option key={p} value={p}>

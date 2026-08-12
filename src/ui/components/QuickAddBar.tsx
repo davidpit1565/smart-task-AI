@@ -18,7 +18,7 @@ export function QuickAddBar({ onAdd }: { onAdd(title: string): void }) {
         e.preventDefault();
         submit();
       }}
-      style={{ display: 'flex', gap: 8, padding: 12 }}
+      style={{ display: 'flex', gap: 8, padding: '4px 16px 12px' }}
     >
       <input
         value={value}
@@ -27,24 +27,28 @@ export function QuickAddBar({ onAdd }: { onAdd(title: string): void }) {
         aria-label={t('inbox.quickAdd.placeholder')}
         style={{
           flex: 1,
-          padding: '10px 14px',
+          padding: '11px 14px',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--color-border)',
-          background: 'var(--color-surface)',
+          background: 'var(--color-bg)',
           color: 'var(--color-text)',
           fontSize: 15,
+          transition: 'border-color 0.15s ease',
         }}
       />
       <button
         type="submit"
+        aria-label={t('inbox.quickAdd.placeholder')}
         style={{
-          padding: '10px 16px',
+          width: 44,
           borderRadius: 'var(--radius-md)',
           border: 'none',
           background: 'var(--color-accent)',
           color: 'var(--color-accent-contrast)',
           fontWeight: 600,
+          fontSize: 18,
           cursor: 'pointer',
+          flexShrink: 0,
         }}
       >
         +

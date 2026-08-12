@@ -7,6 +7,7 @@ import { UndoToast } from '@/ui/components/UndoToast';
 import { TodayScreen } from '@/ui/screens/TodayScreen';
 import { InboxScreen } from '@/ui/screens/InboxScreen';
 import { PlaceholderScreen } from '@/ui/screens/PlaceholderScreen';
+import { CalendarIcon, MoreIcon, ProjectsIcon } from '@/ui/icons';
 
 export function App() {
   const [screen, setScreen] = useState<ScreenId>('today');
@@ -68,9 +69,9 @@ export function App() {
             onReorder={reorder}
           />
         )}
-        {screen === 'calendar' && <PlaceholderScreen messageKey="comingSoon.calendar" />}
-        {screen === 'projects' && <PlaceholderScreen messageKey="comingSoon.projects" />}
-        {screen === 'more' && <PlaceholderScreen messageKey="comingSoon.more" />}
+        {screen === 'calendar' && <PlaceholderScreen messageKey="comingSoon.calendar" Icon={CalendarIcon} />}
+        {screen === 'projects' && <PlaceholderScreen messageKey="comingSoon.projects" Icon={ProjectsIcon} />}
+        {screen === 'more' && <PlaceholderScreen messageKey="comingSoon.more" Icon={MoreIcon} />}
       </main>
 
       <BottomNav active={screen} onChange={setScreen} />

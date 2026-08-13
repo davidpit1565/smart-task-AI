@@ -79,4 +79,52 @@ describe('taskStore', () => {
     const stored = await db.tasks.get(c.id);
     expect(stored?.order).toBe(0);
   });
+
+  it('spawns the next occurrence when completing a recurring task', async () => {
+    const task = await useTaskStore.getState().addTask({
+      title: 'Water plants',
+      dueDate: '2026-08-12',
+      recurrenceRule: { frequency: 'daily' },
+    });
+
+    await useTaskStore.getState().completeTask(task.id);
+
+    const state = useTaskStore.getState().tasks;
+    const original = state.find((t) => t.id === task.id);
+    expect(original?.status).toBe('completed');
+
+    const spawned = state.find((t) => t.id !== task.id && t.title === 'Water plants');
+    expect(spawned).toBeDefined();
+    expect(spawned?.status).toBe('pending');
+    expect(spawned?.dueDate).toBe('2026-08-13');
+    expect(spawned?.metadata.occurrenceIndex).toBe(2);
+  });
+
+  it('does not spawn a next occurrence past the recurrence end date', async () => {
+    const task = await useTaskStore.getState().addTask({
+      title: 'Last one',
+      dueDate: '2026-08-12',
+      recurrenceRule: { frequency: 'daily', endDate: '2026-08-12' },
+    });
+
+    await useTaskStore.getState().completeTask(task.id);
+
+    expect(useTaskStore.getState().tasks).toHaveLength(1);
+  });
+
+  it('undo after completing a recurring task also removes the spawned occurrence', async () => {
+    const task = await useTaskStore.getState().addTask({
+      title: 'Recurring',
+      dueDate: '2026-08-12',
+      recurrenceRule: { frequency: 'daily' },
+    });
+
+    await useTaskStore.getState().completeTask(task.id);
+    expect(useTaskStore.getState().tasks).toHaveLength(2);
+
+    await useTaskStore.getState().undo();
+    const remaining = useTaskStore.getState().tasks;
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0]?.status).toBe('pending');
+  });
 });

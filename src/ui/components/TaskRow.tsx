@@ -2,19 +2,22 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '@/core/task.types';
 import { isOverdue } from '@/core/task.types';
+import { selectSubtaskProgress } from '@/core/progress';
 import { CheckIcon, DragHandleIcon } from '@/ui/icons';
 import { PriorityFlag } from './PriorityFlag';
 
 interface TaskRowProps {
   task: Task;
+  allTasks: Task[];
   onToggleComplete(id: string): void;
   onOpen(task: Task): void;
 }
 
-export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
+export function TaskRow({ task, allTasks, onToggleComplete, onOpen }: TaskRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
   const overdue = isOverdue(task);
   const completed = task.status === 'completed';
+  const subtaskProgress = selectSubtaskProgress(task.id, allTasks);
 
   return (
     <li
@@ -87,8 +90,8 @@ export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
           >
             {task.title}
           </span>
-          {(task.dueDate || task.priority !== 'none') && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5 }}>
+          {(task.dueDate || task.priority !== 'none' || subtaskProgress.total > 0 || task.tags.length > 0) && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, flexWrap: 'wrap' }}>
               <PriorityFlag priority={task.priority} />
               {task.dueDate && (
                 <span style={{ color: overdue ? 'var(--color-danger)' : 'var(--color-text-muted)', fontWeight: overdue ? 600 : 400 }}>
@@ -96,6 +99,16 @@ export function TaskRow({ task, onToggleComplete, onOpen }: TaskRowProps) {
                   {task.dueTime ? ` · ${task.dueTime}` : ''}
                 </span>
               )}
+              {subtaskProgress.total > 0 && (
+                <span style={{ color: 'var(--color-text-muted)' }}>
+                  {subtaskProgress.completed}/{subtaskProgress.total}
+                </span>
+              )}
+              {task.tags.map((tag) => (
+                <span key={tag} style={{ color: 'var(--color-accent)' }}>
+                  #{tag}
+                </span>
+              ))}
             </span>
           )}
         </button>

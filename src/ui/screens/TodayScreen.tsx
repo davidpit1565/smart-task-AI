@@ -48,13 +48,13 @@ export function TodayScreen({ tasks, onToggleComplete, onOpen, onReorder }: Toda
       {overdue.length > 0 && (
         <section>
           <SectionHeader title={t('today.overdue')} count={overdue.length} tone="danger" />
-          <TaskList tasks={overdue} onToggleComplete={onToggleComplete} onOpen={onOpen} onReorder={onReorder} emptyMessage="" />
+          <TaskList tasks={overdue} allTasks={tasks} onToggleComplete={onToggleComplete} onOpen={onOpen} onReorder={onReorder} emptyMessage="" />
         </section>
       )}
 
       <section>
         <SectionHeader title={t('today.tasksToday')} count={today.length} />
-        <TaskList tasks={today} onToggleComplete={onToggleComplete} onOpen={onOpen} onReorder={onReorder} emptyMessage={t('today.empty')} />
+        <TaskList tasks={today} allTasks={tasks} onToggleComplete={onToggleComplete} onOpen={onOpen} onReorder={onReorder} emptyMessage={t('today.empty')} />
       </section>
     </div>
   );

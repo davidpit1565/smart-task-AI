@@ -5,13 +5,14 @@ import { TaskRow } from './TaskRow';
 
 interface TaskListProps {
   tasks: Task[];
+  allTasks: Task[];
   onToggleComplete(id: string): void;
   onOpen(task: Task): void;
   onReorder(orderedIds: string[]): void;
   emptyMessage: string;
 }
 
-export function TaskList({ tasks, onToggleComplete, onOpen, onReorder, emptyMessage }: TaskListProps) {
+export function TaskList({ tasks, allTasks, onToggleComplete, onOpen, onReorder, emptyMessage }: TaskListProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   if (tasks.length === 0) {
@@ -38,7 +39,7 @@ export function TaskList({ tasks, onToggleComplete, onOpen, onReorder, emptyMess
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <ul style={{ margin: 0, padding: 0 }}>
           {tasks.map((task) => (
-            <TaskRow key={task.id} task={task} onToggleComplete={onToggleComplete} onOpen={onOpen} />
+            <TaskRow key={task.id} task={task} allTasks={allTasks} onToggleComplete={onToggleComplete} onOpen={onOpen} />
           ))}
         </ul>
       </SortableContext>

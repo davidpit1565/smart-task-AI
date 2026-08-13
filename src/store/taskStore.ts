@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { createTask, type NewTaskInput, type Task } from '@/core/task.types';
+import { createTask, toLocalIsoDate, type NewTaskInput, type Task } from '@/core/task.types';
+import { computeNextOccurrence } from '@/core/recurrence';
 import type { TaskRepository } from '@/core/task.repository';
 import { DexieTaskRepository } from '@/data/dexieTaskRepository';
 import { db } from '@/data/db';
@@ -7,6 +8,8 @@ import { db } from '@/data/db';
 interface UndoEntry {
   label: string;
   previous: Task;
+  /** A task spawned as a side effect (e.g. the next occurrence of a recurring task) that undo should also remove. */
+  spawnedTaskId?: string;
 }
 
 interface TaskStoreState {
@@ -74,7 +77,36 @@ export const useTaskStore = create<TaskStoreState>((set, get) => ({
     if (!existing) return;
     const updated: Task = { ...existing, status: 'completed', completedAt: now(), updatedAt: now() };
     await persistAndReplace(set, get().repository, updated);
-    set({ lastUndo: { label: 'complete', previous: existing } });
+
+    let spawnedTaskId: string | undefined;
+    if (existing.recurrenceRule) {
+      const occurrenceIndex =
+        typeof existing.metadata.occurrenceIndex === 'number' ? existing.metadata.occurrenceIndex : 1;
+      const fromDate = existing.dueDate ?? toLocalIsoDate(new Date());
+      const nextDueDate = computeNextOccurrence(existing.recurrenceRule, fromDate, occurrenceIndex);
+      if (nextDueDate) {
+        const spawned = await get().addTask({
+          title: existing.title,
+          description: existing.description,
+          notes: existing.notes,
+          priority: existing.priority,
+          dueDate: nextDueDate,
+          dueTime: existing.dueTime,
+          categoryId: existing.categoryId,
+          projectId: existing.projectId,
+          tags: existing.tags,
+          recurrenceRule: existing.recurrenceRule,
+          reminders: existing.reminders,
+          estimatedDuration: existing.estimatedDuration,
+          source: existing.source,
+          createdFromAI: existing.createdFromAI,
+          metadata: { ...existing.metadata, occurrenceIndex: occurrenceIndex + 1 },
+        });
+        spawnedTaskId = spawned.id;
+      }
+    }
+
+    set({ lastUndo: { label: 'complete', previous: existing, spawnedTaskId } });
   },
 
   async uncompleteTask(id) {
@@ -111,6 +143,11 @@ export const useTaskStore = create<TaskStoreState>((set, get) => ({
     const entry = get().lastUndo;
     if (!entry) return;
     await persistAndReplace(set, get().repository, entry.previous);
+    if (entry.spawnedTaskId) {
+      const spawnedId = entry.spawnedTaskId;
+      await get().repository.remove(spawnedId);
+      set((state) => ({ tasks: state.tasks.filter((t) => t.id !== spawnedId) }));
+    }
     set({ lastUndo: null });
   },
 

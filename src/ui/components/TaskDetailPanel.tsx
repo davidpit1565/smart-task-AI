@@ -1,16 +1,45 @@
 import { useState, type CSSProperties } from 'react';
-import type { Priority, Task } from '@/core/task.types';
+import type { Priority, RecurrenceFrequency, Task } from '@/core/task.types';
 import { PRIORITIES } from '@/core/task.types';
+import type { Project } from '@/core/project.types';
+import { selectSubtaskProgress, selectSubtasks } from '@/core/progress';
 import { useTranslation } from '@/i18n/LanguageContext';
+import type { TranslationKey } from '@/i18n/translations';
+import { CheckIcon } from '@/ui/icons';
+import { QuickAddBar } from './QuickAddBar';
+
+const RECURRENCE_OPTIONS: (RecurrenceFrequency | 'none')[] = ['none', 'daily', 'weekly', 'monthly', 'yearly', 'weekdays', 'custom'];
+const WEEKDAY_KEYS: TranslationKey[] = [
+  'recurrence.weekdayShort.sun',
+  'recurrence.weekdayShort.mon',
+  'recurrence.weekdayShort.tue',
+  'recurrence.weekdayShort.wed',
+  'recurrence.weekdayShort.thu',
+  'recurrence.weekdayShort.fri',
+  'recurrence.weekdayShort.sat',
+];
 
 interface TaskDetailPanelProps {
   task: Task;
+  allTasks: Task[];
+  projects: Project[];
   onSave(id: string, patch: Partial<Task>): void;
   onDelete(id: string): void;
   onClose(): void;
+  onAddSubtask(parentId: string, title: string): void;
+  onToggleSubtaskComplete(id: string): void;
 }
 
-export function TaskDetailPanel({ task, onSave, onDelete, onClose }: TaskDetailPanelProps) {
+export function TaskDetailPanel({
+  task,
+  allTasks,
+  projects,
+  onSave,
+  onDelete,
+  onClose,
+  onAddSubtask,
+  onToggleSubtaskComplete,
+}: TaskDetailPanelProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
@@ -19,6 +48,34 @@ export function TaskDetailPanel({ task, onSave, onDelete, onClose }: TaskDetailP
   const [dueTime, setDueTime] = useState(task.dueTime ?? '');
   const [deadline, setDeadline] = useState(task.deadline ?? '');
   const [priority, setPriority] = useState<Priority>(task.priority);
+  const [projectId, setProjectId] = useState(task.projectId ?? '');
+  const [tags, setTags] = useState<string[]>(task.tags);
+  const [tagInput, setTagInput] = useState('');
+  const [frequency, setFrequency] = useState<RecurrenceFrequency | 'none'>(task.recurrenceRule?.frequency ?? 'none');
+  const [daysOfWeek, setDaysOfWeek] = useState<number[]>(task.recurrenceRule?.daysOfWeek ?? []);
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState(task.recurrenceRule?.endDate ?? '');
+
+  const subtasks = selectSubtasks(task.id, allTasks);
+  const subtaskProgress = selectSubtaskProgress(task.id, allTasks);
+  const isSubtask = Boolean(task.parentTaskId);
+
+  function addTag() {
+    const value = tagInput.trim().replace(/^#/, '');
+    if (!value || tags.includes(value)) {
+      setTagInput('');
+      return;
+    }
+    setTags([...tags, value]);
+    setTagInput('');
+  }
+
+  function removeTag(tag: string) {
+    setTags(tags.filter((existing) => existing !== tag));
+  }
+
+  function toggleDayOfWeek(day: number) {
+    setDaysOfWeek((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort()));
+  }
 
   function save() {
     onSave(task.id, {
@@ -29,6 +86,16 @@ export function TaskDetailPanel({ task, onSave, onDelete, onClose }: TaskDetailP
       dueTime: dueTime || null,
       deadline: deadline || null,
       priority,
+      projectId: projectId || null,
+      tags,
+      recurrenceRule:
+        frequency === 'none'
+          ? null
+          : {
+              frequency,
+              daysOfWeek: frequency === 'custom' ? daysOfWeek : undefined,
+              endDate: recurrenceEndDate || undefined,
+            },
     });
     onClose();
   }
@@ -131,6 +198,154 @@ export function TaskDetailPanel({ task, onSave, onDelete, onClose }: TaskDetailP
             ))}
           </select>
         </label>
+
+        {!isSubtask && (
+          <label>
+            <div style={labelStyle}>{t('task.detail.project')}</div>
+            <select value={projectId} onChange={(e) => setProjectId(e.target.value)} style={fieldStyle}>
+              <option value="">{t('task.detail.project.none')}</option>
+              {projects
+                .filter((p) => p.status === 'active')
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+        )}
+
+        <div>
+          <div style={labelStyle}>{t('task.detail.tags')}</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: tags.length ? 8 : 0 }}>
+            {tags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => removeTag(tag)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '4px 10px',
+                  borderRadius: 999,
+                  border: 'none',
+                  background: 'var(--color-accent-soft)',
+                  color: 'var(--color-accent)',
+                  fontSize: 12.5,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                #{tag} ×
+              </button>
+            ))}
+          </div>
+          <input
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addTag();
+              }
+            }}
+            onBlur={addTag}
+            placeholder={t('task.detail.tags.placeholder')}
+            style={fieldStyle}
+          />
+        </div>
+
+        {!isSubtask && (
+          <div>
+            <div style={labelStyle}>{t('task.detail.recurrence')}</div>
+            <select value={frequency} onChange={(e) => setFrequency(e.target.value as RecurrenceFrequency | 'none')} style={fieldStyle}>
+              {RECURRENCE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {t(`recurrence.${option}`)}
+                </option>
+              ))}
+            </select>
+            {frequency === 'custom' && (
+              <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+                {WEEKDAY_KEYS.map((key, day) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggleDayOfWeek(day)}
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: '50%',
+                      border: `1px solid ${daysOfWeek.includes(day) ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                      background: daysOfWeek.includes(day) ? 'var(--color-accent)' : 'none',
+                      color: daysOfWeek.includes(day) ? 'var(--color-accent-contrast)' : 'var(--color-text-muted)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t(key)}
+                  </button>
+                ))}
+              </div>
+            )}
+            {frequency !== 'none' && (
+              <input
+                type="date"
+                value={recurrenceEndDate}
+                onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                style={{ ...fieldStyle, marginTop: 8 }}
+              />
+            )}
+          </div>
+        )}
+
+        {!isSubtask && (
+          <div>
+            <div style={labelStyle}>
+              {t('task.detail.subtasks')}
+              {subtaskProgress.total > 0 && ` · ${subtaskProgress.completed}/${subtaskProgress.total}`}
+            </div>
+            {subtasks.length > 0 && (
+              <ul style={{ margin: '0 0 8px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {subtasks.map((subtask) => (
+                  <li key={subtask.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => onToggleSubtaskComplete(subtask.id)}
+                      aria-label={subtask.status === 'completed' ? 'Mark as not completed' : 'Mark as completed'}
+                      style={{
+                        width: 20,
+                        height: 20,
+                        minWidth: 20,
+                        borderRadius: '50%',
+                        border: `1.5px solid ${subtask.status === 'completed' ? 'var(--color-success)' : 'var(--color-border-strong)'}`,
+                        background: subtask.status === 'completed' ? 'var(--color-success)' : 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {subtask.status === 'completed' && <CheckIcon width={11} height={11} stroke="white" />}
+                    </button>
+                    <span
+                      style={{
+                        fontSize: 13.5,
+                        color: subtask.status === 'completed' ? 'var(--color-text-muted)' : 'var(--color-text)',
+                        textDecoration: subtask.status === 'completed' ? 'line-through' : 'none',
+                      }}
+                    >
+                      {subtask.title}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <QuickAddBar onAdd={(subtaskTitle) => onAddSubtask(task.id, subtaskTitle)} placeholder={t('task.detail.subtasks.placeholder')} />
+          </div>
+        )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
           <button

@@ -79,12 +79,59 @@ above), overdue/completed *filters* as a first-class filter system (Today
 already surfaces all overdue tasks globally, which covers the immediate
 need), search, sort, analytics, calendar, notifications, AI, auth/sync.
 
+## Phase 3 — Calendar architecture + Apple Calendar (DONE)
+
+- `CalendarProvider` interface (`src/core/calendar/calendarProvider.ts`):
+  authenticate/listCalendars/listEvents/createEvent/updateEvent/deleteEvent/
+  sync/disconnect. The UI and `calendarStore` only ever talk to this
+  interface — Google/Outlook (Phases 8/9) are additive, not a rewrite.
+- Apple Calendar via iCloud CalDAV: `AppleCalDavProvider` implements the
+  interface using the real CalDAV protocol (PROPFIND for discovery, REPORT
+  for event queries, PUT/DELETE for writes) against `caldav.icloud.com`,
+  through a stateless Vercel serverless proxy (`api/caldav.ts`) since Apple
+  doesn't send CORS headers. A hand-rolled iCalendar reader/writer
+  (`src/integrations/calendar/ics.ts`) and CalDAV multistatus XML parser
+  (`caldavXml.ts`, via `fast-xml-parser` with namespace-prefix stripping)
+  back it. **Verified against realistic fixture XML/ICS in unit tests, not
+  against a live iCloud account** (no real Apple ID + app-specific password
+  available in this environment) — see README's Calendar section for what
+  that means in practice and how to test it for real (`vercel dev`).
+- Credentials handling: the iCloud app-specific password lives in memory
+  for the session only, never written to IndexedDB — only the non-secret
+  account label + connected-calendar metadata persist (`CalendarConnection`
+  in `data/db.ts`).
+- Calendar screen: connect/disconnect Apple Calendar, per-calendar
+  enable/disable toggles, a synced upcoming-events agenda grouped by day,
+  "Convert to task" per event. Google/Outlook show as explicit "coming in a
+  later phase" rows, not fake connect buttons.
+- Task ↔ event: a "Schedule" section in the task detail sheet (date/time/
+  duration → check availability → confirm), and "Convert to task" from any
+  calendar event.
+- Conflict detection + smart scheduling (`src/core/calendar/scheduling.ts`):
+  `findConflicts` flags overlaps with existing events; `findAvailableSlots`
+  suggests free windows within working hours (default 9–18) sized to the
+  task's duration. Never books anything automatically — surfaces conflicts
+  and suggestions, the user always confirms (including "schedule anyway").
+- A real bug was caught and fixed via the Playwright smoke test itself: an
+  unhandled rejection when the CalDAV proxy is unreachable (e.g. `npm run
+  dev` without `/api` support) — `caldavRequest` now degrades to a clear
+  error message instead of throwing an unparsed-JSON exception, and
+  `calendarStore.connectApple` catches and surfaces it via `error` state.
+- 63 total unit tests (21 new this phase: ICS parse/serialize round-trips,
+  CalDAV XML fixtures, conflict/slot-finding incl. the brief's own "15:00
+  Meeting, 16:00 Meeting" example). `tsc --noEmit`, `vitest run`, `vite
+  build`, `eslint .` all clean. Verified in-browser via Playwright: connect
+  form renders, a failed connection shows a graceful error (not a crash),
+  Schedule section correctly gates on "connect a calendar first" when
+  nothing is connected.
+
+**Not yet implemented** (deferred): Google/Outlook Calendar (Phases 8/9),
+notifications for calendar events, recurring calendar events (RRULE is
+parsed and passed through opaquely, not expanded into individual
+occurrences), attachments on calendar events.
+
 ## Phase roadmap (as scoped by the product brief)
 
-3. Calendar provider abstraction (`CalendarProvider` interface: authenticate,
-   listCalendars, listEvents, createEvent, updateEvent, deleteEvent, sync,
-   disconnect) + Apple Calendar via iCloud CalDAV. Task↔event conversion,
-   conflict detection, smart scheduling suggestions.
 4. Notifications: Web Push for reminders, snooze/reschedule/complete
    actions. (Native push requires a companion native app — documented, not
    faked.)

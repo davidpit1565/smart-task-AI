@@ -46,6 +46,18 @@ identity is: a well-loved notebook, not a dashboard.
   these tokens — never hardcode a hex or skip the serif heading rule.**
   If a new "brand" moment is needed (e.g. onboarding, marketing site),
   extend this identity; don't invent a second one.
+- **Icon completeness, not just a favicon.** The initial icon shipped as
+  SVG only. Real gap: iOS Safari does not reliably use SVG for
+  "Add to Home Screen" — it needs a PNG `apple-touch-icon`, and the web
+  manifest icons are safer as PNG too (broadest Android/Chrome install
+  support). Rasterized a full-bleed (no pre-rounded corners — the OS
+  applies its own mask/shape) square master via a Playwright screenshot
+  at exact pixel sizes (no library dependency needed): `apple-touch-icon.png`
+  (180×180), `icon-192.png`, `icon-512.png`, `favicon-32.png`. Wired into
+  `index.html` (`apple-touch-icon` link + `apple-mobile-web-app-*` meta
+  tags for real standalone install) and the VitePWA manifest (PNG entries
+  alongside the existing SVG ones, PNG first). Any future icon change
+  must regenerate all four PNGs the same way, not just edit the SVG.
 
 ## Apple Calendar auth: real-world fix after live testing (David's iCloud account)
 

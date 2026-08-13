@@ -18,6 +18,7 @@ import { ArchivedScreen } from '@/ui/screens/ArchivedScreen';
 import { SearchScreen } from '@/ui/screens/SearchScreen';
 import { GoalsScreen } from '@/ui/screens/GoalsScreen';
 import { GoalDetailScreen } from '@/ui/screens/GoalDetailScreen';
+import { InsightsScreen } from '@/ui/screens/InsightsScreen';
 import { CalendarScreen } from '@/ui/screens/CalendarScreen';
 import { useDueReminders } from '@/ui/hooks/useDueReminders';
 
@@ -261,6 +262,8 @@ export function App() {
                 onOpen={setSelectedGoalId}
               />
             )
+          ) : moreView === 'insights' ? (
+            <InsightsScreen tasks={nonTrashedTasks} projects={projects} onBack={() => setMoreView(null)} />
           ) : moreView === 'completed' ? (
             <CompletedScreen tasks={nonTrashedTasks} onBack={() => setMoreView(null)} onUncomplete={uncompleteTask} />
           ) : moreView === 'archived' ? (

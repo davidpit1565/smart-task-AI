@@ -304,11 +304,27 @@ highest-value order from the `docs/PRODUCT_VISION.md` backlog:
   build` / `eslint .` all clean, each feature verified end-to-end with a
   real Playwright run (not just unit tests) before moving to the next.
 
+Two more shipped in the same overnight window, same branch:
+
+- **Outlook Calendar** (`outlookCalendarProvider.ts`, `outlookAuth.ts`,
+  `public/outlook-auth-callback.html`): Microsoft Graph + a hand-rolled
+  popup OAuth flow (no MSAL dependency, no backend) — same "no secret ever
+  leaves the browser" shape as Google's GIS flow. Honest gate on missing
+  `VITE_MICROSOFT_CLIENT_ID`. README's Calendar section was also rewritten
+  — it had gone stale after the earlier Apple→Google swap (still described
+  Apple as the active integration and never mentioned Google at all).
+- **Insights** (`src/core/insights.ts`, `InsightsScreen`, under More):
+  streak, completion rate, active/completed/overdue counts, completed-by-
+  project breakdown — all pure computation over existing task/project data,
+  no new storage or backend.
+- 133 total unit tests (up from 114), full gate green, both verified
+  end-to-end with Playwright.
+
 **Still open from `docs/PRODUCT_VISION.md`** (not started this batch):
 AI assistant (task breakdown, cleanup, meeting-notes-to-tasks — needs an
 LLM provider/key decision, deliberately not faked), auth + real sync engine,
-Outlook Calendar, full design-token/component-library pass, widgets/
-Capacitor-readiness architecture, Apple Calendar revival (code preserved,
-not wired in), analytics dashboard, remaining accessibility items (focus
-trap + Escape-to-close on the two full-screen/sheet modals, a systematic
-audit beyond the specific bugs fixed above).
+full design-token/component-library pass, widgets/Capacitor-readiness
+architecture, Apple Calendar revival (code preserved, not wired in),
+remaining accessibility items (focus trap + Escape-to-close on the two
+full-screen/sheet modals, a systematic audit beyond the specific bugs fixed
+above).

@@ -2,7 +2,7 @@ import type { Task } from '@/core/task.types';
 import { useTranslation } from '@/i18n/LanguageContext';
 import { ListRow } from '@/ui/components/ListRow';
 
-export type MoreView = 'search' | 'goals' | 'completed' | 'archived';
+export type MoreView = 'search' | 'goals' | 'insights' | 'completed' | 'archived';
 
 interface MoreScreenProps {
   tasks: Task[];
@@ -20,6 +20,7 @@ export function MoreScreen({ tasks, onOpen }: MoreScreenProps) {
       <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', margin: '0 16px', overflow: 'hidden' }}>
         <ListRow label={t('more.search')} onClick={() => onOpen('search')} />
         <ListRow label={t('more.goals')} onClick={() => onOpen('goals')} />
+        <ListRow label={t('more.insights')} onClick={() => onOpen('insights')} />
         <ListRow label={t('more.completed')} count={completedCount} onClick={() => onOpen('completed')} />
         <ListRow label={t('more.archived')} count={archivedCount} onClick={() => onOpen('archived')} />
       </div>

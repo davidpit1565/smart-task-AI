@@ -16,7 +16,7 @@ export interface Project {
 
 export type NewProjectInput = Partial<Project> & { name: string };
 
-export const PROJECT_COLORS = ['#4f46e5', '#0891b2', '#16a34a', '#d97706', '#dc2626', '#a21caf'] as const;
+export const PROJECT_COLORS = ['#5c7a93', '#4c7a5e', '#b8842e', '#b5622e', '#a5352e', '#8a6a9e'] as const;
 
 export function createProject(input: NewProjectInput, now: () => string = () => new Date().toISOString()): Project {
   const timestamp = now();

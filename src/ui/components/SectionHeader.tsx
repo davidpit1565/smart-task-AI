@@ -12,7 +12,7 @@ export function SectionHeader({ title, count, tone = 'muted' }: { title: string;
     borderRadius: 999,
     fontSize: 11.5,
     fontWeight: 600,
-    background: tone === 'danger' ? 'rgba(220, 38, 38, 0.12)' : 'var(--color-accent-soft)',
+    background: tone === 'danger' ? 'rgba(165, 53, 46, 0.12)' : 'var(--color-accent-soft)',
     color: tone === 'danger' ? 'var(--color-danger)' : 'var(--color-accent)',
   };
 
@@ -22,6 +22,7 @@ export function SectionHeader({ title, count, tone = 'muted' }: { title: string;
         display: 'flex',
         alignItems: 'center',
         gap: 8,
+        fontFamily: 'var(--font-sans)',
         fontSize: 13.5,
         fontWeight: 650,
         letterSpacing: '0.02em',

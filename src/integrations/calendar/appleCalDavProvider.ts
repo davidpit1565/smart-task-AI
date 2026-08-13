@@ -85,7 +85,7 @@ export class AppleCalDavProvider implements CalendarProvider {
       providerType: 'apple' as const,
       externalId: entry.href,
       displayName: entry.displayName,
-      color: entry.color ?? '#4f46e5',
+      color: entry.color ?? '#b8842e',
       enabled: true,
     }));
     return this.calendars;

@@ -1,52 +1,84 @@
 :root {
-  --color-bg: #f4f4f8;
-  --color-surface: #ffffff;
+  --color-bg: #fbf7ee;
+  --color-surface: #fefcf6;
   --color-surface-raised: #ffffff;
-  --color-text: #1a1a22;
-  --color-text-muted: #6b6b78;
-  --color-text-faint: #a3a3b0;
-  --color-border: #e9e9f0;
-  --color-border-strong: #d3d3de;
-  --color-accent: #4f46e5;
-  --color-accent-soft: #eeecfc;
-  --color-accent-contrast: #ffffff;
-  --color-danger: #dc2626;
-  --color-warning: #d97706;
-  --color-success: #16a34a;
+  --color-text: #1f3245;
+  --color-text-muted: #5b6b78;
+  --color-text-faint: #8b98a3;
+  --color-border: #e6dcc4;
+  --color-border-strong: #d8cca8;
+  --color-accent: #b8842e;
+  --color-accent-soft: #f3e6c7;
+  --color-accent-contrast: #1f3245;
+  --color-danger: #a5352e;
+  --color-warning: #b8842e;
+  --color-success: #4c7a5e;
+  --color-rule-line: rgba(31, 50, 69, 0.045);
 
-  --color-priority-low: #3b82f6;
-  --color-priority-medium: #d97706;
-  --color-priority-high: #ea580c;
-  --color-priority-urgent: #dc2626;
+  --color-priority-low: #5c7a93;
+  --color-priority-medium: #b8842e;
+  --color-priority-high: #b5622e;
+  --color-priority-urgent: #a5352e;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --shadow-card: 0 1px 2px rgba(20, 20, 43, 0.04), 0 6px 20px rgba(20, 20, 43, 0.07);
-  --shadow-modal: 0 -8px 40px rgba(20, 20, 43, 0.16);
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-card: 0 1px 2px rgba(31, 50, 69, 0.06), 0 6px 20px rgba(31, 50, 69, 0.09);
+  --shadow-modal: 0 -8px 40px rgba(31, 50, 69, 0.18);
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+  --font-serif: ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #141e29;
+    --color-surface: #1b2733;
+    --color-surface-raised: #22303d;
+    --color-text: #f3ecd7;
+    --color-text-muted: #9faab3;
+    --color-text-faint: #5c6b78;
+    --color-border: #2a3944;
+    --color-border-strong: #3b4c59;
+    --color-accent: #e8b563;
+    --color-accent-soft: #3a2f1e;
+    --color-accent-contrast: #1b2733;
+    --color-danger: #d97b6a;
+    --color-warning: #d99a4e;
+    --color-success: #6fa98a;
+    --color-rule-line: rgba(232, 181, 99, 0.035);
+
+    --color-priority-low: #7c9bb3;
+    --color-priority-medium: #e8b563;
+    --color-priority-high: #d98b57;
+    --color-priority-urgent: #d97b6a;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 20px rgba(0, 0, 0, 0.4);
+    --shadow-modal: 0 -8px 40px rgba(0, 0, 0, 0.5);
+  }
 }
 
 :root[data-theme='dark'] {
-  --color-bg: #0a0a0f;
-  --color-surface: #14141b;
-  --color-surface-raised: #1b1b24;
-  --color-text: #f2f2f7;
-  --color-text-muted: #96969f;
-  --color-text-faint: #5c5c68;
-  --color-border: #24242f;
-  --color-border-strong: #33333f;
-  --color-accent: #8583f5;
-  --color-accent-soft: #23213f;
-  --color-accent-contrast: #0a0a0f;
-  --color-danger: #f87171;
-  --color-warning: #fbbf24;
-  --color-success: #4ade80;
+  --color-bg: #141e29;
+  --color-surface: #1b2733;
+  --color-surface-raised: #22303d;
+  --color-text: #f3ecd7;
+  --color-text-muted: #9faab3;
+  --color-text-faint: #5c6b78;
+  --color-border: #2a3944;
+  --color-border-strong: #3b4c59;
+  --color-accent: #e8b563;
+  --color-accent-soft: #3a2f1e;
+  --color-accent-contrast: #1b2733;
+  --color-danger: #d97b6a;
+  --color-warning: #d99a4e;
+  --color-success: #6fa98a;
+  --color-rule-line: rgba(232, 181, 99, 0.035);
 
-  --color-priority-low: #60a5fa;
-  --color-priority-medium: #fbbf24;
-  --color-priority-high: #fb923c;
-  --color-priority-urgent: #f87171;
+  --color-priority-low: #7c9bb3;
+  --color-priority-medium: #e8b563;
+  --color-priority-high: #d98b57;
+  --color-priority-urgent: #d97b6a;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 20px rgba(0, 0, 0, 0.4);
   --shadow-modal: 0 -8px 40px rgba(0, 0, 0, 0.5);
@@ -64,7 +96,8 @@ body {
 }
 
 body {
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--color-rule-line) 27px 28px);
   color: var(--color-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -76,8 +109,9 @@ body {
 h1,
 h2,
 h3 {
-  letter-spacing: -0.02em;
-  font-weight: 650;
+  font-family: var(--font-serif);
+  letter-spacing: -0.005em;
+  font-weight: 700;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -111,5 +145,5 @@ select:focus-visible {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg);
+  background: transparent;
 }

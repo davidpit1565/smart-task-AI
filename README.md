@@ -58,31 +58,59 @@ defines the same kind of contract for calendar integrations.
 
 ## Calendar integration
 
+Google Calendar and Outlook Calendar are the two active integrations. Both
+are real, both need a one-time OAuth app registration (a public Client ID,
+never a secret) before "Sign in" actually works — until then the app shows
+a clear setup error instead of faking a connection.
+
+### Google Calendar
+
+1. In [Google Cloud Console](https://console.cloud.google.com), create (or
+   reuse) a project, then **APIs & Services → Credentials → Create
+   Credentials → OAuth client ID**, application type **Web application**.
+2. Under **Authorized JavaScript origins**, add the exact origin you're
+   serving the app from (e.g. `http://localhost:5173` for `npm run dev`, or
+   your Vercel preview/production URL). No redirect URI is needed — this
+   uses Google Identity Services' token flow via a popup, not a redirect.
+3. Enable the **Google Calendar API** for the project.
+4. Set `VITE_GOOGLE_CLIENT_ID` (in `.env.local` or your host's env vars) to
+   the client ID.
+
+Implementation: `src/integrations/calendar/googleCalendarProvider.ts` +
+`googleIdentityLoader.ts`. No backend involved — Google's Calendar API v3
+sends CORS headers and GIS's token flow is designed for public
+(browser-only) clients.
+
+### Outlook Calendar
+
+1. In the [Azure Portal](https://portal.azure.com) → **Microsoft Entra ID →
+   App registrations → New registration**. Choose "Accounts in any
+   organizational directory and personal Microsoft accounts" unless you
+   specifically want to restrict it.
+2. Under **Authentication → Add a platform → Single-page application**, add
+   the redirect URI `<your-origin>/outlook-auth-callback.html` (e.g.
+   `http://localhost:5173/outlook-auth-callback.html`). This must be an SPA
+   platform entry, not "Web" — SPA is what allows the implicit token flow
+   without a client secret.
+3. Under **API permissions**, add the delegated Microsoft Graph permission
+   `Calendars.ReadWrite`.
+4. Set `VITE_MICROSOFT_CLIENT_ID` to the Application (client) ID.
+
+Implementation: `src/integrations/calendar/outlookCalendarProvider.ts`
+(Microsoft Graph) + `outlookAuth.ts` (a hand-rolled popup + the static
+`public/outlook-auth-callback.html` redirect page — no MSAL dependency,
+mirroring Google's "no secret ever leaves the browser" approach).
+
+### Apple Calendar (implemented, not wired into the UI)
+
 Apple Calendar connects via iCloud **CalDAV** (RFC 4791) rather than native
 EventKit — EventKit requires a native iOS build (Xcode/macOS), which this
-environment cannot produce or test. CalDAV is a real, documented protocol
-Apple supports for exactly this purpose, and it works from a web backend.
-
-**Why the `/api/caldav` proxy exists:** `caldav.icloud.com` doesn't send CORS
-headers, so the browser can't call it directly. The proxy is a stateless
-passthrough — it never stores credentials, just relays a single request's
-Basic Auth header to Apple and returns the response.
-
-**Local dev limitation:** `npm run dev` (plain Vite) does **not** serve
-`/api/*` routes — that's a Vercel-only convention. Connecting to Apple
-Calendar will fail with a clear "request failed" error under `npm run dev`;
-to test the full flow locally, run `vercel dev` instead (requires the Vercel
-CLI and `vercel link`). The connect form still degrades gracefully either
-way — every network failure surfaces a real error message instead of hanging
-or crashing (see `tests/` — this is unit-tested, and the graceful-failure
-path was verified in-browser under plain `npm run dev`).
-
-**What's verified vs. not:** the CalDAV XML parsing (`caldavXml.ts`) and
-iCalendar parsing/serialization (`ics.ts`) are unit-tested against realistic
-fixture responses modeled on Apple's documented format. The provider has
-**not** been exercised against a live iCloud account in this environment (no
-real Apple ID + app-specific password available here) — verify with your own
-account before relying on it.
+environment cannot produce or test. The code (`appleCalDavProvider.ts`,
+`caldavClient.ts`, `ics.ts`, the `/api/caldav` Vercel proxy) is kept in the
+repo and unit-tested against realistic fixtures, but it's no longer imported
+from the active app (tree-shaken out of the production bundle) after it
+failed against a real iCloud account in practice — see `PROJECT_STATE.md`
+for the full story. Revisit only if there's a specific reason to.
 
 Native-only features (Home Screen/Lock Screen widgets, Siri Shortcuts,
 Spotlight, Apple Watch) are architected for but require a native companion

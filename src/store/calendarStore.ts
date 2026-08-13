@@ -2,13 +2,14 @@ import { create } from 'zustand';
 import type { CalendarEvent, CalendarProviderType, ConnectedCalendar, NewCalendarEventInput } from '@/core/calendar/calendarEvent.types';
 import type { CalendarProvider, DateRange } from '@/core/calendar/calendarProvider';
 import { GoogleCalendarProvider } from '@/integrations/calendar/googleCalendarProvider';
+import { OutlookCalendarProvider } from '@/integrations/calendar/outlookCalendarProvider';
 import { db, type CalendarConnection } from '@/data/db';
 
 // Apple Calendar (CalDAV) is implemented but removed from the active UI —
-// see docs/PRODUCT_VISION.md. Outlook is a later phase behind this same
-// interface; adding a provider here is the only wiring a new one needs.
+// see docs/PRODUCT_VISION.md.
 const providers: Partial<Record<CalendarProviderType, CalendarProvider>> = {
   google: new GoogleCalendarProvider(),
+  outlook: new OutlookCalendarProvider(),
 };
 
 function defaultSyncRange(): DateRange {
@@ -30,6 +31,7 @@ interface CalendarStoreState {
 
   load(): Promise<void>;
   connectGoogle(): Promise<void>;
+  connectOutlook(): Promise<void>;
   disconnect(providerType: CalendarProviderType): Promise<void>;
   syncProvider(providerType: CalendarProviderType): Promise<void>;
   setCalendarEnabled(calendarId: string, enabled: boolean): Promise<void>;
@@ -74,6 +76,30 @@ export const useCalendarStore = create<CalendarStoreState>((set, get) => ({
       await get().syncProvider('google');
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Could not connect to Google Calendar.' });
+    } finally {
+      set({ connecting: false });
+    }
+  },
+
+  async connectOutlook() {
+    set({ connecting: true, error: null });
+    try {
+      const provider = providers.outlook;
+      if (!provider) throw new Error('Outlook Calendar provider is not registered.');
+      const auth = await provider.authenticate(undefined);
+
+      const connection: CalendarConnection = {
+        id: 'outlook',
+        providerType: 'outlook',
+        accountLabel: auth.accountLabel,
+        connectedAt: new Date().toISOString(),
+      };
+      await db.calendarConnections.put(connection);
+      set((state) => ({ connections: [...state.connections.filter((c) => c.providerType !== 'outlook'), connection] }));
+
+      await get().syncProvider('outlook');
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Could not connect to Outlook Calendar.' });
     } finally {
       set({ connecting: false });
     }

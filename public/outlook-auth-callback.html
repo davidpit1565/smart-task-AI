@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Signing in…</title>
+  </head>
+  <body>
+    <script>
+      (function () {
+        var raw = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+        var params = new URLSearchParams(raw);
+        var message = params.has('access_token')
+          ? { source: 'outlook-auth', accessToken: params.get('access_token') }
+          : {
+              source: 'outlook-auth',
+              error: params.get('error_description') || params.get('error') || 'Microsoft sign-in was cancelled or failed.',
+            };
+        if (window.opener) {
+          window.opener.postMessage(message, window.location.origin);
+        }
+        window.close();
+      })();
+    </script>
+  </body>
+</html>

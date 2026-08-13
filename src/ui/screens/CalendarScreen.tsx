@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import type { CalendarEvent, ConnectedCalendar } from '@/core/calendar/calendarEvent.types';
+import type { CalendarEvent, CalendarProviderType, ConnectedCalendar } from '@/core/calendar/calendarEvent.types';
 import type { CalendarConnection } from '@/data/db';
 import { useTranslation } from '@/i18n/LanguageContext';
-import { GoogleIcon } from '@/ui/icons';
+import { GoogleIcon, OutlookIcon } from '@/ui/icons';
 
 interface CalendarScreenProps {
   connections: CalendarConnection[];
@@ -11,8 +11,10 @@ interface CalendarScreenProps {
   connecting: boolean;
   error: string | null;
   onConnectGoogle(): Promise<void>;
+  onConnectOutlook(): Promise<void>;
   onDisconnectGoogle(): Promise<void>;
-  onSync(): Promise<void>;
+  onDisconnectOutlook(): Promise<void>;
+  onSync(providerType: CalendarProviderType): Promise<void>;
   onToggleCalendar(calendarId: string, enabled: boolean): void;
   onConvertToTask(event: CalendarEvent): void;
 }
@@ -24,23 +26,27 @@ export function CalendarScreen({
   connecting,
   error,
   onConnectGoogle,
+  onConnectOutlook,
   onDisconnectGoogle,
+  onDisconnectOutlook,
   onSync,
   onToggleCalendar,
   onConvertToTask,
 }: CalendarScreenProps) {
   const { t } = useTranslation();
-  const [syncing, setSyncing] = useState(false);
+  const [syncingProvider, setSyncingProvider] = useState<CalendarProviderType | null>(null);
 
   const googleConnection = connections.find((c) => c.providerType === 'google');
   const googleCalendars = connectedCalendars.filter((c) => c.providerType === 'google');
+  const outlookConnection = connections.find((c) => c.providerType === 'outlook');
+  const outlookCalendars = connectedCalendars.filter((c) => c.providerType === 'outlook');
 
-  async function handleSync() {
-    setSyncing(true);
+  async function handleSync(providerType: CalendarProviderType) {
+    setSyncingProvider(providerType);
     try {
-      await onSync();
+      await onSync(providerType);
     } finally {
-      setSyncing(false);
+      setSyncingProvider(null);
     }
   }
 
@@ -59,6 +65,7 @@ export function CalendarScreen({
   return (
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 20 }}>
       <h1 style={{ fontSize: 23, margin: 0 }}>{t('calendar.title')}</h1>
+      {error && <p style={{ color: 'var(--color-danger)', fontSize: 12.5, margin: 0 }}>{error}</p>}
 
       <section
         style={{
@@ -103,8 +110,8 @@ export function CalendarScreen({
 
             <button
               type="button"
-              onClick={handleSync}
-              disabled={syncing}
+              onClick={() => handleSync('google')}
+              disabled={syncingProvider === 'google'}
               style={{
                 alignSelf: 'flex-start',
                 padding: '8px 14px',
@@ -113,10 +120,10 @@ export function CalendarScreen({
                 background: 'none',
                 color: 'var(--color-text)',
                 fontSize: 13,
-                cursor: syncing ? 'default' : 'pointer',
+                cursor: syncingProvider === 'google' ? 'default' : 'pointer',
               }}
             >
-              {syncing ? t('calendar.syncing') : t('calendar.sync')}
+              {syncingProvider === 'google' ? t('calendar.syncing') : t('calendar.sync')}
             </button>
           </div>
         ) : (
@@ -128,7 +135,6 @@ export function CalendarScreen({
             <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>
               {t('calendar.connectGoogle.description')}
             </p>
-            {error && <p style={{ color: 'var(--color-danger)', fontSize: 12.5, margin: 0 }}>{error}</p>}
             <button
               type="button"
               onClick={() => onConnectGoogle()}
@@ -160,15 +166,96 @@ export function CalendarScreen({
           background: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-card)',
           padding: 18,
-          opacity: 0.55,
         }}
       >
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{t('calendar.outlook.title')}</div>
-        <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', margin: 0 }}>{t('calendar.outlook.comingSoon')}</p>
+        {outlookConnection ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 14, color: 'var(--color-text)' }}>
+                {t('calendar.connectedAs', { email: outlookConnection.accountLabel })}
+              </span>
+              <button
+                type="button"
+                onClick={() => onDisconnectOutlook()}
+                style={{ background: 'none', border: 'none', color: 'var(--color-danger)', fontSize: 13, cursor: 'pointer' }}
+              >
+                {t('calendar.disconnect')}
+              </button>
+            </div>
+
+            {outlookCalendars.length > 0 && (
+              <div>
+                <div style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6 }}>
+                  {t('calendar.calendars')}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {outlookCalendars.map((cal) => (
+                    <label key={cal.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+                      <input type="checkbox" checked={cal.enabled} onChange={(e) => onToggleCalendar(cal.id, e.target.checked)} />
+                      <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: cal.color }} />
+                      {cal.displayName}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => handleSync('outlook')}
+              disabled={syncingProvider === 'outlook'}
+              style={{
+                alignSelf: 'flex-start',
+                padding: '8px 14px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border)',
+                background: 'none',
+                color: 'var(--color-text)',
+                fontSize: 13,
+                cursor: syncingProvider === 'outlook' ? 'default' : 'pointer',
+              }}
+            >
+              {syncingProvider === 'outlook' ? t('calendar.syncing') : t('calendar.sync')}
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <OutlookIcon width={18} height={18} />
+              <span style={{ fontSize: 15, fontWeight: 600 }}>{t('calendar.connectOutlook.title')}</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>
+              {t('calendar.connectOutlook.description')}
+            </p>
+            <button
+              type="button"
+              onClick={() => onConnectOutlook()}
+              disabled={connecting}
+              style={{
+                alignSelf: 'flex-start',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '9px 16px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border-strong)',
+                background: 'var(--color-surface-raised)',
+                color: 'var(--color-text)',
+                fontWeight: 600,
+                fontSize: 13,
+                cursor: connecting ? 'default' : 'pointer',
+              }}
+            >
+              <OutlookIcon width={16} height={16} />
+              {connecting ? t('calendar.connectOutlook.connecting') : t('calendar.connectOutlook.signIn')}
+            </button>
+          </div>
+        )}
       </section>
 
-      {googleConnection && (
+      {(googleConnection || outlookConnection) && (
         <section>
           <div style={{ fontSize: 13.5, fontWeight: 650, letterSpacing: '0.02em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: 8 }}>
             {t('calendar.upcoming')}

@@ -193,6 +193,17 @@ export function PauseIcon(props: IconProps) {
   );
 }
 
+/** A simple calendar-mark in Outlook's brand blue — not the exact Microsoft logomark, paired with visible "Microsoft" text in the button. */
+export function OutlookIcon(props: IconProps) {
+  return (
+    <svg {...base} fill="none" stroke="#0364B8" {...props}>
+      <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+      <path d="M8 3v4M16 3v4M3.5 10h17" />
+      <path d="M8.5 14.5h3v3h-3z" fill="#0364B8" stroke="none" />
+    </svg>
+  );
+}
+
 /** Google's standard multi-color "G" logomark, per Google brand guidelines for sign-in buttons. */
 export function GoogleIcon(props: IconProps) {
   return (

@@ -68,6 +68,7 @@ export function App() {
   const calendarError = useCalendarStore((s) => s.error);
   const loadCalendar = useCalendarStore((s) => s.load);
   const connectGoogle = useCalendarStore((s) => s.connectGoogle);
+  const connectOutlook = useCalendarStore((s) => s.connectOutlook);
   const disconnectCalendar = useCalendarStore((s) => s.disconnect);
   const syncCalendarProvider = useCalendarStore((s) => s.syncProvider);
   const setCalendarEnabled = useCalendarStore((s) => s.setCalendarEnabled);
@@ -194,8 +195,10 @@ export function App() {
             connecting={calendarConnecting}
             error={calendarError}
             onConnectGoogle={connectGoogle}
+            onConnectOutlook={connectOutlook}
             onDisconnectGoogle={() => disconnectCalendar('google')}
-            onSync={() => syncCalendarProvider('google')}
+            onDisconnectOutlook={() => disconnectCalendar('outlook')}
+            onSync={(providerType) => syncCalendarProvider(providerType)}
             onToggleCalendar={setCalendarEnabled}
             onConvertToTask={handleConvertEventToTask}
           />

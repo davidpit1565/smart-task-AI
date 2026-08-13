@@ -44,10 +44,43 @@ tags, subtasks, categories, recurrence engine, archive/completed views,
 search/filter/sort, attachments UI, calendar integrations, notifications,
 NL task creation, AI assistant, auth/sync, analytics, focus mode.
 
+## Phase 2 — Projects, tags, subtasks, recurrence, archive/completed (DONE)
+
+- Projects: `Project` model + Dexie repository + Zustand store (CRUD,
+  archive/restore). Projects list screen with a per-project progress bar;
+  project detail screen (description/notes/deadline, its own task list +
+  quick-add). Task → project assignment via a picker in the task detail
+  sheet.
+- Tags: chip editor in the task detail sheet (add via Enter, remove with a
+  tap); tag chips shown on task rows. Still free-form strings, no separate
+  Tag entity — matches what the Phase 2 brief actually asked for
+  ("projects, tags, subtasks and recurrence"); a full Category CRUD system
+  was explicitly *not* built since it wasn't in this phase's scope and the
+  `categoryId` field already reserves the spot for later.
+- Subtasks: add/complete inline in the task detail sheet;
+  `src/core/progress.ts` computes `x/y` rollups shown on the parent's row
+  and folded into project totals (top-level tasks only, so a subtask's
+  completion isn't double-counted against its parent's).
+- Recurrence engine (`src/core/recurrence.ts`): real date arithmetic —
+  daily/weekly/monthly (incl. "every 15th" and month-end clamping, e.g.
+  Jan 31 + 1 month → Feb 28, not Mar 3)/yearly/every-weekday/custom
+  weekdays, with an optional end date and an occurrence-count limit.
+  Completing a recurring task spawns the next occurrence; undo removes
+  that spawned occurrence too (tracked via `lastUndo.spawnedTaskId`).
+- More tab: real Completed and Archived views replace the "coming soon"
+  placeholder, with restore actions.
+- 42 total unit tests (20 new this phase). `tsc --noEmit`, `vitest run`,
+  `vite build`, `eslint .` all clean. Verified in-browser via Playwright:
+  create project → add tasks → complete one → edit tags/subtasks/
+  recurrence/project on a task → browse Completed/Archived.
+
+**Not yet implemented** (deferred): a separate Category entity/UI (see
+above), overdue/completed *filters* as a first-class filter system (Today
+already surfaces all overdue tasks globally, which covers the immediate
+need), search, sort, analytics, calendar, notifications, AI, auth/sync.
+
 ## Phase roadmap (as scoped by the product brief)
 
-2. Projects, tags, subtasks (with progress rollup), recurrence engine,
-   archive + restore + completed/overdue views, categories.
 3. Calendar provider abstraction (`CalendarProvider` interface: authenticate,
    listCalendars, listEvents, createEvent, updateEvent, deleteEvent, sync,
    disconnect) + Apple Calendar via iCloud CalDAV. Task↔event conversion,

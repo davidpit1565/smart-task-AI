@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import type { Task } from '@/core/task.types';
+import type { CalendarEvent } from '@/core/calendar/calendarEvent.types';
 import { useTaskStore } from '@/store/taskStore';
 import { useProjectStore } from '@/store/projectStore';
+import { useCalendarStore } from '@/store/calendarStore';
 import { BottomNav, type ScreenId } from '@/ui/components/BottomNav';
 import { TaskDetailPanel } from '@/ui/components/TaskDetailPanel';
 import { UndoToast } from '@/ui/components/UndoToast';
@@ -12,12 +13,11 @@ import { ProjectDetailScreen } from '@/ui/screens/ProjectDetailScreen';
 import { MoreScreen, type MoreView } from '@/ui/screens/MoreScreen';
 import { CompletedScreen } from '@/ui/screens/CompletedScreen';
 import { ArchivedScreen } from '@/ui/screens/ArchivedScreen';
-import { PlaceholderScreen } from '@/ui/screens/PlaceholderScreen';
-import { CalendarIcon } from '@/ui/icons';
+import { CalendarScreen } from '@/ui/screens/CalendarScreen';
 
 export function App() {
   const [screen, setScreen] = useState<ScreenId>('today');
-  const [openTask, setOpenTask] = useState<Task | null>(null);
+  const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const [toast, setToast] = useState<'completed' | 'deleted' | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [moreView, setMoreView] = useState<MoreView | null>(null);
@@ -42,14 +42,32 @@ export function App() {
   const archiveProject = useProjectStore((s) => s.archiveProject);
   const restoreProject = useProjectStore((s) => s.restoreProject);
 
+  const calendarConnections = useCalendarStore((s) => s.connections);
+  const connectedCalendars = useCalendarStore((s) => s.connectedCalendars);
+  const calendarEvents = useCalendarStore((s) => s.events);
+  const calendarLoaded = useCalendarStore((s) => s.loaded);
+  const calendarConnecting = useCalendarStore((s) => s.connecting);
+  const calendarError = useCalendarStore((s) => s.error);
+  const loadCalendar = useCalendarStore((s) => s.load);
+  const connectApple = useCalendarStore((s) => s.connectApple);
+  const disconnectCalendar = useCalendarStore((s) => s.disconnect);
+  const syncCalendarProvider = useCalendarStore((s) => s.syncProvider);
+  const setCalendarEnabled = useCalendarStore((s) => s.setCalendarEnabled);
+  const createEventForTask = useCalendarStore((s) => s.createEventForTask);
+  const deleteEventForTask = useCalendarStore((s) => s.deleteEventForTask);
+  const linkEventToTask = useCalendarStore((s) => s.linkEventToTask);
+
   useEffect(() => {
     load();
     loadProjects();
-  }, [load, loadProjects]);
+    loadCalendar();
+  }, [load, loadProjects, loadCalendar]);
 
   const visibleTasks = tasks.filter((t) => t.status === 'pending' || t.status === 'completed');
   const nonTrashedTasks = tasks.filter((t) => t.status !== 'trashed');
   const selectedProject = selectedProjectId ? projects.find((p) => p.id === selectedProjectId) ?? null : null;
+  const openTask = openTaskId ? tasks.find((t) => t.id === openTaskId) ?? null : null;
+  const defaultConnectedCalendarId = connectedCalendars.find((c) => c.enabled)?.id ?? null;
 
   function handleToggleComplete(id: string) {
     const task = tasks.find((t) => t.id === id);
@@ -77,24 +95,76 @@ export function App() {
     setScreen('projects');
   }
 
-  if (!loaded || !projectsLoaded) return null;
+  async function handleScheduleTask(taskId: string, input: { connectedCalendarId: string; start: string; end: string }) {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const event = await createEventForTask({
+      connectedCalendarId: input.connectedCalendarId,
+      title: task.title,
+      description: task.description,
+      location: '',
+      start: input.start,
+      end: input.end,
+      allDay: false,
+      recurrenceRule: null,
+      taskId,
+    });
+    await updateTask(taskId, {
+      dueDate: input.start.slice(0, 10),
+      dueTime: input.start.slice(11, 16),
+      calendarEventId: event.id,
+    });
+  }
+
+  async function handleUnscheduleTask(taskId: string) {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task?.calendarEventId) return;
+    await deleteEventForTask(task.calendarEventId);
+    await updateTask(taskId, { calendarEventId: null });
+  }
+
+  async function handleConvertEventToTask(event: CalendarEvent) {
+    const task = await addTask({
+      title: event.title,
+      description: event.description,
+      dueDate: event.start.slice(0, 10),
+      dueTime: event.allDay ? null : event.start.slice(11, 16),
+      calendarEventId: event.id,
+    });
+    await linkEventToTask(event.id, task.id);
+  }
+
+  if (!loaded || !projectsLoaded || !calendarLoaded) return null;
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <main style={{ flex: 1, overflowY: 'auto' }}>
         {screen === 'today' && (
-          <TodayScreen tasks={visibleTasks} onToggleComplete={handleToggleComplete} onOpen={setOpenTask} onReorder={reorder} />
+          <TodayScreen tasks={visibleTasks} onToggleComplete={handleToggleComplete} onOpen={(task) => setOpenTaskId(task.id)} onReorder={reorder} />
         )}
         {screen === 'inbox' && (
           <InboxScreen
             tasks={visibleTasks}
             onAdd={(title) => addTask({ title })}
             onToggleComplete={handleToggleComplete}
-            onOpen={setOpenTask}
+            onOpen={(task) => setOpenTaskId(task.id)}
             onReorder={reorder}
           />
         )}
-        {screen === 'calendar' && <PlaceholderScreen messageKey="comingSoon.calendar" Icon={CalendarIcon} />}
+        {screen === 'calendar' && (
+          <CalendarScreen
+            connections={calendarConnections}
+            connectedCalendars={connectedCalendars}
+            events={calendarEvents}
+            connecting={calendarConnecting}
+            error={calendarError}
+            onConnectApple={connectApple}
+            onDisconnectApple={() => disconnectCalendar('apple')}
+            onSync={() => syncCalendarProvider('apple')}
+            onToggleCalendar={setCalendarEnabled}
+            onConvertToTask={handleConvertEventToTask}
+          />
+        )}
         {screen === 'projects' &&
           (selectedProject ? (
             <ProjectDetailScreen
@@ -109,7 +179,7 @@ export function App() {
               onRestore={() => restoreProject(selectedProject.id)}
               onAddTask={(title) => addTask({ title, projectId: selectedProject.id })}
               onToggleComplete={handleToggleComplete}
-              onOpenTask={setOpenTask}
+              onOpenTask={(task) => setOpenTaskId(task.id)}
               onReorder={reorder}
             />
           ) : (
@@ -132,11 +202,15 @@ export function App() {
           task={openTask}
           allTasks={tasks}
           projects={projects}
+          calendarEvents={calendarEvents}
+          connectedCalendarId={defaultConnectedCalendarId}
           onSave={(id, patch) => updateTask(id, patch)}
           onDelete={handleDelete}
-          onClose={() => setOpenTask(null)}
+          onClose={() => setOpenTaskId(null)}
           onAddSubtask={(parentId, title) => addTask({ title, parentTaskId: parentId, projectId: openTask.projectId })}
           onToggleSubtaskComplete={handleToggleComplete}
+          onScheduleTask={handleScheduleTask}
+          onUnscheduleTask={handleUnscheduleTask}
         />
       )}
 

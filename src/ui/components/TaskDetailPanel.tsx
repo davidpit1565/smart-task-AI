@@ -2,11 +2,13 @@ import { useState, type CSSProperties } from 'react';
 import type { Priority, RecurrenceFrequency, Task } from '@/core/task.types';
 import { PRIORITIES } from '@/core/task.types';
 import type { Project } from '@/core/project.types';
+import type { CalendarEvent } from '@/core/calendar/calendarEvent.types';
 import { selectSubtaskProgress, selectSubtasks } from '@/core/progress';
 import { useTranslation } from '@/i18n/LanguageContext';
 import type { TranslationKey } from '@/i18n/translations';
 import { CheckIcon } from '@/ui/icons';
 import { QuickAddBar } from './QuickAddBar';
+import { ScheduleSection } from './ScheduleSection';
 
 const RECURRENCE_OPTIONS: (RecurrenceFrequency | 'none')[] = ['none', 'daily', 'weekly', 'monthly', 'yearly', 'weekdays', 'custom'];
 const WEEKDAY_KEYS: TranslationKey[] = [
@@ -23,22 +25,30 @@ interface TaskDetailPanelProps {
   task: Task;
   allTasks: Task[];
   projects: Project[];
+  calendarEvents: CalendarEvent[];
+  connectedCalendarId: string | null;
   onSave(id: string, patch: Partial<Task>): void;
   onDelete(id: string): void;
   onClose(): void;
   onAddSubtask(parentId: string, title: string): void;
   onToggleSubtaskComplete(id: string): void;
+  onScheduleTask(id: string, input: { connectedCalendarId: string; start: string; end: string }): Promise<void>;
+  onUnscheduleTask(id: string): Promise<void>;
 }
 
 export function TaskDetailPanel({
   task,
   allTasks,
   projects,
+  calendarEvents,
+  connectedCalendarId,
   onSave,
   onDelete,
   onClose,
   onAddSubtask,
   onToggleSubtaskComplete,
+  onScheduleTask,
+  onUnscheduleTask,
 }: TaskDetailPanelProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(task.title);
@@ -198,6 +208,20 @@ export function TaskDetailPanel({
             ))}
           </select>
         </label>
+
+        {!isSubtask && (
+          <ScheduleSection
+            task={task}
+            calendarEvents={calendarEvents}
+            connectedCalendarId={connectedCalendarId}
+            onSchedule={async (input) => {
+              await onScheduleTask(task.id, input);
+              setDueDate(input.start.slice(0, 10));
+              setDueTime(input.start.slice(11, 16));
+            }}
+            onUnschedule={() => onUnscheduleTask(task.id)}
+          />
+        )}
 
         {!isSubtask && (
           <label>

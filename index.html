@@ -5,7 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#1F3245" />
     <meta name="description" content="Smart Tasks AI — an AI-assisted task management and productivity app" />
+
+    <!-- Browser tab / desktop: SVG first (crisp at any size), PNG fallback for browsers without SVG favicon support. -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+
+    <!-- iOS "Add to Home Screen": Safari does not reliably support SVG here, so this must be a PNG.
+         iOS also ignores the web manifest for standalone display/icon on older versions, hence the meta tags below. -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Smart Tasks" />
+
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>Smart Tasks AI</title>
   </head>

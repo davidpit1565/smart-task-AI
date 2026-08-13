@@ -10,6 +10,43 @@ Calendar (CalDAV, not EventKit) and native-only features (widgets, Siri,
 Watch — need a native companion app later; architecture below leaves room
 for that without a rewrite).
 
+## Visual identity: "Field Notes" (locked — this is the brand now, not a placeholder theme)
+
+Chosen by David from four fully-built concept directions (Instrument,
+Undergrowth, Afterhours, Field Notes — presented as an interactive board
+with a live app mockup per concept, not just color swatches). The
+identity is: a well-loved notebook, not a dashboard.
+
+- Palette: ink-blue `#1F3245` (text/primary), marigold `#B8842E` light /
+  `#E8B563` dark (the one accent — used sparingly), warm paper `#FBF7EE`
+  (light bg) / deep ink-navy `#141E29` (dark bg, not a generic near-black).
+  Full token set in `src/styles/global.css`.
+- Type: system serif (`--font-serif`, Georgia/ui-serif stack) for all
+  headings (h1–h3) via one global rule, clean sans for body/UI, tabular
+  monospace reserved for numbers/timestamps. Small uppercase labels
+  (`SectionHeader`) explicitly opt back into sans — serif is for
+  headlines, not micro-UI. Hebrew text automatically falls back to the
+  system's Hebrew-capable font since Georgia has no Hebrew glyphs —
+  expected, not a bug.
+- Texture: a very faint ruled-paper line pattern on the page background
+  (`--color-rule-line`), visible in empty space and behind card gaps,
+  invisible under opaque cards — reinforces "notebook" without hurting
+  legibility.
+- Radii pulled in (16/10/7px, was 20/12/8) and shadows re-tinted warm
+  (ink-blue-based rgba instead of neutral grey) — reads as "paper cards
+  with a soft ink shadow," not a generic bubbly app-shell.
+- Real app icon (`public/favicon.svg` + `icon-192/512.svg`): a solid
+  ink-blue folded-corner card with a marigold fold and a paper-white
+  checkmark stroke through it. Verified legible down to 16px.
+- `PROJECT_COLORS` (user-pickable project dot colors) and the Apple
+  Calendar default color fallback were retuned to the same muted family
+  so a user-picked color never looks like it wandered in from a
+  different app.
+- **Any future screen/component must pull colors and heading fonts from
+  these tokens — never hardcode a hex or skip the serif heading rule.**
+  If a new "brand" moment is needed (e.g. onboarding, marketing site),
+  extend this identity; don't invent a second one.
+
 ## Phase 1 — Core task management (DONE)
 
 - Extensible `Task` domain model (`src/core/task.types.ts`) with every field

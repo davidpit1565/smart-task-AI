@@ -3,7 +3,9 @@ import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '@/core/task.types';
 import { isOverdue } from '@/core/task.types';
 import { selectSubtaskProgress } from '@/core/progress';
-import { CheckIcon, DragHandleIcon } from '@/ui/icons';
+import { isBlocked } from '@/core/dependencies';
+import { useTranslation } from '@/i18n/LanguageContext';
+import { CheckIcon, DragHandleIcon, LinkIcon } from '@/ui/icons';
 import { PriorityFlag } from './PriorityFlag';
 
 interface TaskRowProps {
@@ -14,10 +16,12 @@ interface TaskRowProps {
 }
 
 export function TaskRow({ task, allTasks, onToggleComplete, onOpen }: TaskRowProps) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
   const overdue = isOverdue(task);
   const completed = task.status === 'completed';
   const subtaskProgress = selectSubtaskProgress(task.id, allTasks);
+  const blocked = !completed && isBlocked(task, allTasks);
 
   return (
     <li
@@ -41,7 +45,7 @@ export function TaskRow({ task, allTasks, onToggleComplete, onOpen }: TaskRowPro
       >
         <button
           type="button"
-          aria-label={completed ? 'Mark as not completed' : 'Mark as completed'}
+          aria-label={completed ? t('task.action.markIncomplete') : t('task.action.markComplete')}
           onClick={() => onToggleComplete(task.id)}
           style={{
             width: 24,
@@ -90,8 +94,14 @@ export function TaskRow({ task, allTasks, onToggleComplete, onOpen }: TaskRowPro
           >
             {task.title}
           </span>
-          {(task.dueDate || task.priority !== 'none' || subtaskProgress.total > 0 || task.tags.length > 0) && (
+          {(task.dueDate || task.priority !== 'none' || subtaskProgress.total > 0 || task.tags.length > 0 || blocked) && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, flexWrap: 'wrap' }}>
+              {blocked && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: 'var(--color-text-faint)' }} title={t('task.blocked')}>
+                  <LinkIcon width={12} height={12} />
+                  {t('task.blocked')}
+                </span>
+              )}
               <PriorityFlag priority={task.priority} />
               {task.dueDate && (
                 <span style={{ color: overdue ? 'var(--color-danger)' : 'var(--color-text-muted)', fontWeight: overdue ? 600 : 400 }}>
@@ -115,7 +125,7 @@ export function TaskRow({ task, allTasks, onToggleComplete, onOpen }: TaskRowPro
 
         <button
           type="button"
-          aria-label="Drag to reorder"
+          aria-label={t('task.action.dragReorder')}
           {...attributes}
           {...listeners}
           style={{

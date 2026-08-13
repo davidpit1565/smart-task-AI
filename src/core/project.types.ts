@@ -9,6 +9,7 @@ export interface Project {
   status: ProjectStatus;
   deadline: string | null;
   calendarEventId: string | null;
+  goalId: string | null;
   createdAt: string;
   updatedAt: string;
   order: number;
@@ -29,8 +30,14 @@ export function createProject(input: NewProjectInput, now: () => string = () => 
     status: input.status ?? 'active',
     deadline: input.deadline ?? null,
     calendarEventId: input.calendarEventId ?? null,
+    goalId: input.goalId ?? null,
     createdAt: input.createdAt ?? timestamp,
     updatedAt: input.updatedAt ?? timestamp,
     order: input.order ?? 0,
   };
+}
+
+/** Backfills fields added after some projects were already persisted, so old IndexedDB records stay valid. */
+export function normalizeProject(project: Project): Project {
+  return { ...project, goalId: project.goalId ?? null };
 }

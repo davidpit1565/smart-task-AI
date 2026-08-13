@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createTask, toLocalIsoDate, type NewTaskInput, type Task } from '@/core/task.types';
+import { createTask, normalizeTask, toLocalIsoDate, type NewTaskInput, type Task } from '@/core/task.types';
 import { computeNextOccurrence } from '@/core/recurrence';
 import type { TaskRepository } from '@/core/task.repository';
 import { DexieTaskRepository } from '@/data/dexieTaskRepository';
@@ -52,7 +52,7 @@ export const useTaskStore = create<TaskStoreState>((set, get) => ({
   repository: new DexieTaskRepository(db),
 
   async load() {
-    const tasks = await get().repository.getAll();
+    const tasks = (await get().repository.getAll()).map(normalizeTask);
     set({ tasks, loaded: true });
   },
 

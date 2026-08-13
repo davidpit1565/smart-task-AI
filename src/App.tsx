@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import type { CalendarEvent } from '@/core/calendar/calendarEvent.types';
 import { useTaskStore } from '@/store/taskStore';
 import { useProjectStore } from '@/store/projectStore';
+import { useGoalStore } from '@/store/goalStore';
 import { useCalendarStore } from '@/store/calendarStore';
 import { BottomNav, type ScreenId } from '@/ui/components/BottomNav';
 import { TaskDetailPanel } from '@/ui/components/TaskDetailPanel';
+import { FocusModeScreen } from '@/ui/components/FocusModeScreen';
 import { UndoToast } from '@/ui/components/UndoToast';
 import { TodayScreen } from '@/ui/screens/TodayScreen';
 import { InboxScreen } from '@/ui/screens/InboxScreen';
@@ -13,13 +15,20 @@ import { ProjectDetailScreen } from '@/ui/screens/ProjectDetailScreen';
 import { MoreScreen, type MoreView } from '@/ui/screens/MoreScreen';
 import { CompletedScreen } from '@/ui/screens/CompletedScreen';
 import { ArchivedScreen } from '@/ui/screens/ArchivedScreen';
+import { SearchScreen } from '@/ui/screens/SearchScreen';
+import { GoalsScreen } from '@/ui/screens/GoalsScreen';
+import { GoalDetailScreen } from '@/ui/screens/GoalDetailScreen';
+import { InsightsScreen } from '@/ui/screens/InsightsScreen';
 import { CalendarScreen } from '@/ui/screens/CalendarScreen';
+import { useDueReminders } from '@/ui/hooks/useDueReminders';
 
 export function App() {
   const [screen, setScreen] = useState<ScreenId>('today');
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
+  const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
   const [toast, setToast] = useState<'completed' | 'deleted' | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [moreView, setMoreView] = useState<MoreView | null>(null);
 
   const tasks = useTaskStore((s) => s.tasks);
@@ -34,6 +43,8 @@ export function App() {
   const undo = useTaskStore((s) => s.undo);
   const reorder = useTaskStore((s) => s.reorder);
 
+  useDueReminders(tasks);
+
   const projects = useProjectStore((s) => s.projects);
   const projectsLoaded = useProjectStore((s) => s.loaded);
   const loadProjects = useProjectStore((s) => s.load);
@@ -42,6 +53,14 @@ export function App() {
   const archiveProject = useProjectStore((s) => s.archiveProject);
   const restoreProject = useProjectStore((s) => s.restoreProject);
 
+  const goals = useGoalStore((s) => s.goals);
+  const goalsLoaded = useGoalStore((s) => s.loaded);
+  const loadGoals = useGoalStore((s) => s.load);
+  const addGoal = useGoalStore((s) => s.addGoal);
+  const updateGoal = useGoalStore((s) => s.updateGoal);
+  const archiveGoal = useGoalStore((s) => s.archiveGoal);
+  const restoreGoal = useGoalStore((s) => s.restoreGoal);
+
   const calendarConnections = useCalendarStore((s) => s.connections);
   const connectedCalendars = useCalendarStore((s) => s.connectedCalendars);
   const calendarEvents = useCalendarStore((s) => s.events);
@@ -49,7 +68,8 @@ export function App() {
   const calendarConnecting = useCalendarStore((s) => s.connecting);
   const calendarError = useCalendarStore((s) => s.error);
   const loadCalendar = useCalendarStore((s) => s.load);
-  const connectApple = useCalendarStore((s) => s.connectApple);
+  const connectGoogle = useCalendarStore((s) => s.connectGoogle);
+  const connectOutlook = useCalendarStore((s) => s.connectOutlook);
   const disconnectCalendar = useCalendarStore((s) => s.disconnect);
   const syncCalendarProvider = useCalendarStore((s) => s.syncProvider);
   const setCalendarEnabled = useCalendarStore((s) => s.setCalendarEnabled);
@@ -60,13 +80,16 @@ export function App() {
   useEffect(() => {
     load();
     loadProjects();
+    loadGoals();
     loadCalendar();
-  }, [load, loadProjects, loadCalendar]);
+  }, [load, loadProjects, loadGoals, loadCalendar]);
 
   const visibleTasks = tasks.filter((t) => t.status === 'pending' || t.status === 'completed');
   const nonTrashedTasks = tasks.filter((t) => t.status !== 'trashed');
   const selectedProject = selectedProjectId ? projects.find((p) => p.id === selectedProjectId) ?? null : null;
+  const selectedGoal = selectedGoalId ? goals.find((g) => g.id === selectedGoalId) ?? null : null;
   const openTask = openTaskId ? tasks.find((t) => t.id === openTaskId) ?? null : null;
+  const focusTask = focusTaskId ? tasks.find((t) => t.id === focusTaskId) ?? null : null;
   const defaultConnectedCalendarId = connectedCalendars.find((c) => c.enabled)?.id ?? null;
 
   function handleToggleComplete(id: string) {
@@ -90,8 +113,22 @@ export function App() {
     setToast(null);
   }
 
+  function handleStartFocus(taskId: string) {
+    setFocusTaskId(taskId);
+    setOpenTaskId(null);
+  }
+
+  function handleFinishFocus(minutesSpent: number) {
+    if (focusTaskId) {
+      const task = tasks.find((t) => t.id === focusTaskId);
+      if (task) updateTask(focusTaskId, { actualDuration: (task.actualDuration ?? 0) + minutesSpent });
+    }
+    setFocusTaskId(null);
+  }
+
   function openProject(projectId: string) {
     setSelectedProjectId(projectId);
+    setMoreView(null);
     setScreen('projects');
   }
 
@@ -134,7 +171,7 @@ export function App() {
     await linkEventToTask(event.id, task.id);
   }
 
-  if (!loaded || !projectsLoaded || !calendarLoaded) return null;
+  if (!loaded || !projectsLoaded || !goalsLoaded || !calendarLoaded) return null;
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -158,9 +195,11 @@ export function App() {
             events={calendarEvents}
             connecting={calendarConnecting}
             error={calendarError}
-            onConnectApple={connectApple}
-            onDisconnectApple={() => disconnectCalendar('apple')}
-            onSync={() => syncCalendarProvider('apple')}
+            onConnectGoogle={connectGoogle}
+            onConnectOutlook={connectOutlook}
+            onDisconnectGoogle={() => disconnectCalendar('google')}
+            onDisconnectOutlook={() => disconnectCalendar('outlook')}
+            onSync={(providerType) => syncCalendarProvider(providerType)}
             onToggleCalendar={setCalendarEnabled}
             onConvertToTask={handleConvertEventToTask}
           />
@@ -186,7 +225,46 @@ export function App() {
             <ProjectsScreen projects={projects} tasks={visibleTasks} onAdd={(name) => addProject({ name })} onOpen={openProject} />
           ))}
         {screen === 'more' &&
-          (moreView === 'completed' ? (
+          (moreView === 'search' ? (
+            <SearchScreen
+              tasks={nonTrashedTasks}
+              projects={projects}
+              onBack={() => setMoreView(null)}
+              onToggleComplete={handleToggleComplete}
+              onOpen={(task) => setOpenTaskId(task.id)}
+            />
+          ) : moreView === 'goals' ? (
+            selectedGoal ? (
+              <GoalDetailScreen
+                goal={selectedGoal}
+                projects={projects}
+                tasks={visibleTasks}
+                onBack={() => setSelectedGoalId(null)}
+                onUpdate={(patch) => updateGoal(selectedGoal.id, patch)}
+                onArchive={() => {
+                  archiveGoal(selectedGoal.id);
+                  setSelectedGoalId(null);
+                }}
+                onRestore={() => restoreGoal(selectedGoal.id)}
+                onAddTask={(title) => addTask({ title, goalId: selectedGoal.id })}
+                onOpenProject={openProject}
+                onToggleComplete={handleToggleComplete}
+                onOpenTask={(task) => setOpenTaskId(task.id)}
+                onReorder={reorder}
+              />
+            ) : (
+              <GoalsScreen
+                goals={goals}
+                projects={projects}
+                tasks={visibleTasks}
+                onBack={() => setMoreView(null)}
+                onAdd={(name) => addGoal({ name })}
+                onOpen={setSelectedGoalId}
+              />
+            )
+          ) : moreView === 'insights' ? (
+            <InsightsScreen tasks={nonTrashedTasks} projects={projects} onBack={() => setMoreView(null)} />
+          ) : moreView === 'completed' ? (
             <CompletedScreen tasks={nonTrashedTasks} onBack={() => setMoreView(null)} onUncomplete={uncompleteTask} />
           ) : moreView === 'archived' ? (
             <ArchivedScreen tasks={nonTrashedTasks} onBack={() => setMoreView(null)} onRestore={restoreTask} />
@@ -202,6 +280,7 @@ export function App() {
           task={openTask}
           allTasks={tasks}
           projects={projects}
+          goals={goals}
           calendarEvents={calendarEvents}
           connectedCalendarId={defaultConnectedCalendarId}
           onSave={(id, patch) => updateTask(id, patch)}
@@ -211,8 +290,11 @@ export function App() {
           onToggleSubtaskComplete={handleToggleComplete}
           onScheduleTask={handleScheduleTask}
           onUnscheduleTask={handleUnscheduleTask}
+          onStartFocus={handleStartFocus}
         />
       )}
+
+      {focusTask && <FocusModeScreen task={focusTask} onFinish={handleFinishFocus} />}
 
       {toast && <UndoToast messageKey={`toast.${toast}`} onUndo={handleUndo} onDismiss={() => setToast(null)} />}
     </div>

@@ -129,3 +129,98 @@ export function FlagIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function SearchIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M19.5 19.5l-4.3-4.3" />
+    </svg>
+  );
+}
+
+export function FilterIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 6h16M7.5 12h9M10.5 18h3" />
+    </svg>
+  );
+}
+
+export function LinkIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9.5 14.5l5-5" />
+      <path d="M11 6.5l1.3-1.3a3.7 3.7 0 0 1 5.2 5.2L16 12" />
+      <path d="M13 17.5l-1.3 1.3a3.7 3.7 0 0 1-5.2-5.2L8 12" />
+    </svg>
+  );
+}
+
+export function TargetIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="12" cy="12" r="0.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function TimerIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 13V8.5M9.5 3.5h5" />
+    </svg>
+  );
+}
+
+export function PlayIcon(props: IconProps) {
+  return (
+    <svg {...base} fill="currentColor" stroke="none" {...props}>
+      <path d="M7.5 5.2a1 1 0 0 1 1.52-.85l10 6.8a1 1 0 0 1 0 1.7l-10 6.8a1 1 0 0 1-1.52-.85z" />
+    </svg>
+  );
+}
+
+export function PauseIcon(props: IconProps) {
+  return (
+    <svg {...base} fill="currentColor" stroke="none" {...props}>
+      <rect x="6.5" y="4.5" width="4" height="15" rx="1" />
+      <rect x="13.5" y="4.5" width="4" height="15" rx="1" />
+    </svg>
+  );
+}
+
+/** A simple calendar-mark in Outlook's brand blue — not the exact Microsoft logomark, paired with visible "Microsoft" text in the button. */
+export function OutlookIcon(props: IconProps) {
+  return (
+    <svg {...base} fill="none" stroke="#0364B8" {...props}>
+      <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+      <path d="M8 3v4M16 3v4M3.5 10h17" />
+      <path d="M8.5 14.5h3v3h-3z" fill="#0364B8" stroke="none" />
+    </svg>
+  );
+}
+
+/** Google's standard multi-color "G" logomark, per Google brand guidelines for sign-in buttons. */
+export function GoogleIcon(props: IconProps) {
+  return (
+    <svg width={22} height={22} viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path
+        fill="#4285F4"
+        d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.63h6.47a5.53 5.53 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.81z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.96-1.07 7.95-2.92l-3.88-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.09A11.998 11.998 0 0 0 12 24z"
+      />
+      <path fill="#FBBC05" d="M5.27 14.27a7.2 7.2 0 0 1 0-4.54v-3.1H1.27a12 12 0 0 0 0 10.73l4-3.09z" />
+      <path
+        fill="#EA4335"
+        d="M12 4.77c1.76 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.27 6.63l4 3.1c.95-2.85 3.6-4.96 6.73-4.96z"
+      />
+    </svg>
+  );
+}

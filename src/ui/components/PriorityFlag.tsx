@@ -18,7 +18,11 @@ export function PriorityFlag({ priority, showLabel = false }: { priority: Priori
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color }}>
       <FlagIcon width={12} height={12} />
-      {showLabel && <span style={{ fontWeight: 500 }}>{t(`task.priority.${priority}` as TranslationKey)}</span>}
+      {showLabel ? (
+        <span style={{ fontWeight: 500 }}>{t(`task.priority.${priority}` as TranslationKey)}</span>
+      ) : (
+        <span className="sr-only">{t(`task.priority.${priority}` as TranslationKey)}</span>
+      )}
     </span>
   );
 }

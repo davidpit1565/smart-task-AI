@@ -17,7 +17,7 @@ export function BottomNav({ active, onChange }: { active: ScreenId; onChange(id:
   const { t } = useTranslation();
   return (
     <nav
-      aria-label="Main navigation"
+      aria-label={t('nav.landmarkLabel')}
       style={{
         display: 'flex',
         justifyContent: 'space-around',

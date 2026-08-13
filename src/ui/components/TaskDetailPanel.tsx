@@ -2,15 +2,27 @@ import { useState, type CSSProperties } from 'react';
 import type { Priority, RecurrenceFrequency, Task } from '@/core/task.types';
 import { PRIORITIES } from '@/core/task.types';
 import type { Project } from '@/core/project.types';
+import type { Goal } from '@/core/goal.types';
 import type { CalendarEvent } from '@/core/calendar/calendarEvent.types';
 import { selectSubtaskProgress, selectSubtasks } from '@/core/progress';
+import { getBlockingTasks, wouldCreateCycle } from '@/core/dependencies';
 import { useTranslation } from '@/i18n/LanguageContext';
 import type { TranslationKey } from '@/i18n/translations';
-import { CheckIcon } from '@/ui/icons';
+import { CheckIcon, TimerIcon } from '@/ui/icons';
+import { requestNotificationPermission } from '@/integrations/notifications/notificationManager';
 import { QuickAddBar } from './QuickAddBar';
 import { ScheduleSection } from './ScheduleSection';
 
 const RECURRENCE_OPTIONS: (RecurrenceFrequency | 'none')[] = ['none', 'daily', 'weekly', 'monthly', 'yearly', 'weekdays', 'custom'];
+/** null = no reminder. MVP is a single reminder per task, not the full multi-reminder list from the spec. */
+const REMINDER_OPTIONS: { offsetMinutes: number | null; labelKey: TranslationKey }[] = [
+  { offsetMinutes: null, labelKey: 'reminder.none' },
+  { offsetMinutes: 0, labelKey: 'reminder.atDueTime' },
+  { offsetMinutes: 5, labelKey: 'reminder.5min' },
+  { offsetMinutes: 15, labelKey: 'reminder.15min' },
+  { offsetMinutes: 60, labelKey: 'reminder.1hour' },
+  { offsetMinutes: 60 * 24, labelKey: 'reminder.1day' },
+];
 const WEEKDAY_KEYS: TranslationKey[] = [
   'recurrence.weekdayShort.sun',
   'recurrence.weekdayShort.mon',
@@ -25,6 +37,7 @@ interface TaskDetailPanelProps {
   task: Task;
   allTasks: Task[];
   projects: Project[];
+  goals: Goal[];
   calendarEvents: CalendarEvent[];
   connectedCalendarId: string | null;
   onSave(id: string, patch: Partial<Task>): void;
@@ -34,12 +47,14 @@ interface TaskDetailPanelProps {
   onToggleSubtaskComplete(id: string): void;
   onScheduleTask(id: string, input: { connectedCalendarId: string; start: string; end: string }): Promise<void>;
   onUnscheduleTask(id: string): Promise<void>;
+  onStartFocus(id: string): void;
 }
 
 export function TaskDetailPanel({
   task,
   allTasks,
   projects,
+  goals,
   calendarEvents,
   connectedCalendarId,
   onSave,
@@ -49,6 +64,7 @@ export function TaskDetailPanel({
   onToggleSubtaskComplete,
   onScheduleTask,
   onUnscheduleTask,
+  onStartFocus,
 }: TaskDetailPanelProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(task.title);
@@ -59,15 +75,35 @@ export function TaskDetailPanel({
   const [deadline, setDeadline] = useState(task.deadline ?? '');
   const [priority, setPriority] = useState<Priority>(task.priority);
   const [projectId, setProjectId] = useState(task.projectId ?? '');
+  const [goalId, setGoalId] = useState(task.goalId ?? '');
   const [tags, setTags] = useState<string[]>(task.tags);
   const [tagInput, setTagInput] = useState('');
   const [frequency, setFrequency] = useState<RecurrenceFrequency | 'none'>(task.recurrenceRule?.frequency ?? 'none');
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>(task.recurrenceRule?.daysOfWeek ?? []);
   const [recurrenceEndDate, setRecurrenceEndDate] = useState(task.recurrenceRule?.endDate ?? '');
+  const [reminderOffset, setReminderOffset] = useState<number | null>(task.reminders[0]?.offsetMinutes ?? null);
+  const [dependsOn, setDependsOn] = useState<string[]>(task.dependsOn);
 
   const subtasks = selectSubtasks(task.id, allTasks);
   const subtaskProgress = selectSubtaskProgress(task.id, allTasks);
   const isSubtask = Boolean(task.parentTaskId);
+  const blockingTasks = getBlockingTasks({ ...task, dependsOn }, allTasks);
+  const availableDependencies = allTasks.filter(
+    (candidate) =>
+      candidate.id !== task.id &&
+      candidate.status !== 'trashed' &&
+      !dependsOn.includes(candidate.id) &&
+      !wouldCreateCycle(task.id, candidate.id, allTasks),
+  );
+
+  function addDependency(id: string) {
+    if (!id || dependsOn.includes(id)) return;
+    setDependsOn([...dependsOn, id]);
+  }
+
+  function removeDependency(id: string) {
+    setDependsOn(dependsOn.filter((existing) => existing !== id));
+  }
 
   function addTag() {
     const value = tagInput.trim().replace(/^#/, '');
@@ -87,6 +123,13 @@ export function TaskDetailPanel({
     setDaysOfWeek((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort()));
   }
 
+  function handleReminderChange(value: string) {
+    const offset = value === '' ? null : Number(value);
+    setReminderOffset(offset);
+    // Only ask for permission right when the user actually turns a reminder on — never proactively.
+    if (offset !== null) requestNotificationPermission();
+  }
+
   function save() {
     onSave(task.id, {
       title: title.trim() || task.title,
@@ -97,7 +140,9 @@ export function TaskDetailPanel({
       deadline: deadline || null,
       priority,
       projectId: projectId || null,
+      goalId: goalId || null,
       tags,
+      dependsOn,
       recurrenceRule:
         frequency === 'none'
           ? null
@@ -106,6 +151,7 @@ export function TaskDetailPanel({
               daysOfWeek: frequency === 'custom' ? daysOfWeek : undefined,
               endDate: recurrenceEndDate || undefined,
             },
+      reminders: reminderOffset === null ? [] : [{ id: task.reminders[0]?.id ?? crypto.randomUUID(), offsetMinutes: reminderOffset, method: 'push' }],
     });
     onClose();
   }
@@ -117,7 +163,7 @@ export function TaskDetailPanel({
     border: '1px solid var(--color-border)',
     background: 'var(--color-bg)',
     color: 'var(--color-text)',
-    fontSize: 14,
+    fontSize: 16,
     transition: 'border-color 0.15s ease',
   };
 
@@ -169,8 +215,23 @@ export function TaskDetailPanel({
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          aria-label={t('task.detail.titleLabel')}
           style={{ ...fieldStyle, fontSize: 19, fontWeight: 650, border: 'none', background: 'none', padding: '2px 0' }}
         />
+
+        {blockingTasks.length > 0 && (
+          <div
+            style={{
+              padding: '8px 12px',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--color-accent-soft)',
+              color: 'var(--color-text-muted)',
+              fontSize: 13,
+            }}
+          >
+            {t('task.blocked.banner')} {blockingTasks.map((b) => b.title).join(', ')}
+          </div>
+        )}
 
         <label>
           <div style={labelStyle}>{t('task.detail.description')}</div>
@@ -209,6 +270,34 @@ export function TaskDetailPanel({
           </select>
         </label>
 
+        <button
+          type="button"
+          onClick={() => onStartFocus(task.id)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            width: '100%',
+            padding: '11px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-surface)',
+            color: 'var(--color-text)',
+            fontSize: 14.5,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          <TimerIcon width={17} height={17} />
+          {t('focus.start')}
+          {task.actualDuration != null && task.actualDuration > 0 && (
+            <span style={{ color: 'var(--color-text-muted)', fontWeight: 500 }}>
+              · {t('focus.timeSpent', { minutes: task.actualDuration })}
+            </span>
+          )}
+        </button>
+
         {!isSubtask && (
           <ScheduleSection
             task={task}
@@ -233,6 +322,22 @@ export function TaskDetailPanel({
                 .map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+        )}
+
+        {!isSubtask && goals.length > 0 && (
+          <label>
+            <div style={labelStyle}>{t('task.detail.goal')}</div>
+            <select value={goalId} onChange={(e) => setGoalId(e.target.value)} style={fieldStyle}>
+              <option value="">{t('task.detail.goal.none')}</option>
+              {goals
+                .filter((g) => g.status === 'active')
+                .map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
                   </option>
                 ))}
             </select>
@@ -282,6 +387,51 @@ export function TaskDetailPanel({
 
         {!isSubtask && (
           <div>
+            <div style={labelStyle}>{t('task.detail.dependsOn')}</div>
+            {dependsOn.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                {dependsOn.map((id) => {
+                  const dep = allTasks.find((candidate) => candidate.id === id);
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => removeDependency(id)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        padding: '4px 10px',
+                        borderRadius: 999,
+                        border: 'none',
+                        background: 'var(--color-accent-soft)',
+                        color: 'var(--color-accent)',
+                        fontSize: 12.5,
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {dep?.title ?? id} ×
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {availableDependencies.length > 0 && (
+              <select value="" onChange={(e) => addDependency(e.target.value)} style={fieldStyle}>
+                <option value="">{t('task.detail.dependsOn.add')}</option>
+                {availableDependencies.map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {candidate.title}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+
+        {!isSubtask && (
+          <div>
             <div style={labelStyle}>{t('task.detail.recurrence')}</div>
             <select value={frequency} onChange={(e) => setFrequency(e.target.value as RecurrenceFrequency | 'none')} style={fieldStyle}>
               {RECURRENCE_OPTIONS.map((option) => (
@@ -325,6 +475,17 @@ export function TaskDetailPanel({
           </div>
         )}
 
+        <div>
+          <div style={labelStyle}>{t('task.detail.reminder')}</div>
+          <select value={reminderOffset ?? ''} onChange={(e) => handleReminderChange(e.target.value)} style={fieldStyle}>
+            {REMINDER_OPTIONS.map((option) => (
+              <option key={option.labelKey} value={option.offsetMinutes ?? ''}>
+                {t(option.labelKey)}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {!isSubtask && (
           <div>
             <div style={labelStyle}>
@@ -338,7 +499,7 @@ export function TaskDetailPanel({
                     <button
                       type="button"
                       onClick={() => onToggleSubtaskComplete(subtask.id)}
-                      aria-label={subtask.status === 'completed' ? 'Mark as not completed' : 'Mark as completed'}
+                      aria-label={subtask.status === 'completed' ? t('task.action.markIncomplete') : t('task.action.markComplete')}
                       style={{
                         width: 20,
                         height: 20,

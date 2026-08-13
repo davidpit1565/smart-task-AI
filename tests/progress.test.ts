@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createTask } from '@/core/task.types';
-import { selectProjectProgress, selectSubtaskProgress, selectSubtasks } from '@/core/progress';
+import { createProject } from '@/core/project.types';
+import { selectGoalProgress, selectProjectProgress, selectSubtaskProgress, selectSubtasks } from '@/core/progress';
 
 describe('selectProjectProgress', () => {
   it('counts only top-level tasks for the given project', () => {
@@ -14,6 +15,22 @@ describe('selectProjectProgress', () => {
 
   it('returns zero progress for a project with no tasks', () => {
     expect(selectProjectProgress('empty', [])).toEqual({ total: 0, completed: 0, percent: 0 });
+  });
+});
+
+describe('selectGoalProgress', () => {
+  it('rolls up tasks directly on the goal and tasks in projects belonging to the goal', () => {
+    const project = createProject({ name: 'Run a 5k', goalId: 'g1' });
+    const otherProject = createProject({ name: 'Unrelated', goalId: 'g2' });
+    const directTask = createTask({ title: 'Buy running shoes', goalId: 'g1', status: 'completed' });
+    const projectTask = createTask({ title: 'Week 1 training', projectId: project.id });
+    const otherProjectTask = createTask({ title: 'Not this goal', projectId: otherProject.id });
+    const progress = selectGoalProgress('g1', [directTask, projectTask, otherProjectTask], [project, otherProject]);
+    expect(progress).toEqual({ total: 2, completed: 1, percent: 50 });
+  });
+
+  it('returns zero progress for a goal with nothing linked to it', () => {
+    expect(selectGoalProgress('empty', [], [])).toEqual({ total: 0, completed: 0, percent: 0 });
   });
 });
 

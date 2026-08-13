@@ -51,7 +51,7 @@ export function ProjectDetailScreen({
     border: '1px solid var(--color-border)',
     background: 'var(--color-bg)',
     color: 'var(--color-text)',
-    fontSize: 14,
+    fontSize: 16,
   };
   const labelStyle: CSSProperties = {
     fontSize: 11.5,
@@ -72,6 +72,7 @@ export function ProjectDetailScreen({
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={() => name.trim() && onUpdate({ name: name.trim() })}
+          aria-label={t('projectDetail.nameLabel')}
           style={{ ...fieldStyle, border: 'none', background: 'none', fontSize: 21, fontWeight: 650, padding: '2px 0' }}
         />
         <button

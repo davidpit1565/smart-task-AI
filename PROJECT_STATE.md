@@ -47,6 +47,45 @@ identity is: a well-loved notebook, not a dashboard.
   If a new "brand" moment is needed (e.g. onboarding, marketing site),
   extend this identity; don't invent a second one.
 
+## Apple Calendar auth: real-world fix after live testing (David's iCloud account)
+
+The first live attempt against a real iCloud account failed with a 401
+("Apple rejected the iCloud email/app-specific password") — this is the
+first time the CalDAV path was exercised against a real account, since it
+had only been unit-tested against fixtures until now. Cross-checked the
+request shape against Apple's documented flow (matches the standard
+`PROPFIND / -u email:app-password -H "Depth: 0"` approach exactly — this
+part was already correct) and against known real-world iCloud CalDAV
+gotchas. Two real gaps found and fixed in `api/caldav.ts` +
+`src/integrations/calendar/caldavClient.ts`:
+
+1. **No User-Agent** — Apple's CalDAV service has been observed treating
+   requests with a missing/generic User-Agent as bot traffic. Added a
+   descriptive one, standard CalDAV client practice.
+2. **Redirects silently broken** — Apple shards CalDAV across per-account
+   hosts (`pNN-caldav.icloud.com`) via a 301/302 redirect. `fetch` does
+   not safely auto-follow a redirect for PROPFIND/REPORT (it downgrades
+   the method to GET and drops the XML body per the HTTP redirect spec),
+   so a real account landing on a redirect would have silently broken.
+   The proxy now returns `redirectedTo` (validated to an `*.icloud.com`
+   host only — this is deliberately not a generic URL passthrough, to
+   avoid the proxy becoming an open SSRF relay) and the client follows it
+   once, retrying with the full original request.
+3. **401 diagnostics** — the proxy now returns the `WWW-Authenticate`
+   header and a body snippet on a 401 instead of a bare generic message.
+   Real-world precedent (home-assistant/core#91711) shows iCloud
+   sometimes challenges with a legacy `X-MobileMe-AuthToken` scheme
+   instead of Basic in some cases — surfacing this distinguishes "wrong
+   credentials" from "Apple wants a different auth flow here" instead of
+   guessing blind.
+
+5 new unit tests mock `fetch` to cover the redirect-follow loop and the
+richer error messages (`tests/caldavClient.test.ts`). **Still not
+confirmed working end-to-end against a live account** — these are the
+fixes for the concrete failure that was hit; if it still 401s after this,
+the new error message (which now includes the WWW-Authenticate hint) is
+the next diagnostic signal, not a guess.
+
 ## Phase 1 — Core task management (DONE)
 
 - Extensible `Task` domain model (`src/core/task.types.ts`) with every field

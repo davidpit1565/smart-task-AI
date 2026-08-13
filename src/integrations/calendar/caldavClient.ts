@@ -21,13 +21,22 @@ export interface CaldavResponse {
   headers: Record<string, string>;
 }
 
+interface CaldavProxyPayload extends CaldavResponse {
+  error?: string;
+  wwwAuthenticate?: string | null;
+  bodySnippet?: string;
+  redirectedTo?: string | null;
+}
+
 const CALDAV_ORIGIN = 'https://caldav.icloud.com';
+const MAX_REDIRECTS = 3;
 
 export async function caldavRequest(
   credentials: CaldavCredentials,
   method: 'PROPFIND' | 'REPORT' | 'PUT' | 'DELETE' | 'GET',
   path: string,
   options: { headers?: Record<string, string>; body?: string } = {},
+  redirectCount = 0,
 ): Promise<CaldavResponse> {
   const res = await fetch('/api/caldav', {
     method: 'POST',
@@ -42,16 +51,41 @@ export async function caldavRequest(
     }),
   });
 
-  let data: (CaldavResponse & { error?: string }) | null = null;
+  let data: CaldavProxyPayload | null = null;
   try {
     data = await res.json();
   } catch {
-    // Non-JSON response (e.g. a 404 from a misconfigured or unreachable proxy) — fall through to the generic error below.
+    // Non-JSON response (e.g. a 404 from a misconfigured or unreachable proxy) — fall through below.
   }
 
-  if (!res.ok || !data) {
-    throw new Error(data?.error ?? `Apple Calendar request failed (HTTP ${res.status} ${res.statusText}).`);
+  if (!data) {
+    throw new Error(`Apple Calendar request failed (HTTP ${res.status} ${res.statusText}).`);
   }
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      const hint = data.wwwAuthenticate ? ` Apple said: ${data.wwwAuthenticate}.` : '';
+      throw new Error(
+        `${data.error ?? 'Apple rejected the iCloud email/app-specific password.'}${hint} ` +
+          'Generate a fresh app-specific password at appleid.apple.com (Sign-In and Security → App-Specific Passwords) and paste it in exactly, with the dashes.',
+      );
+    }
+    throw new Error(data.error ?? `Apple Calendar request failed (HTTP ${res.status}).`);
+  }
+
+  // Apple shards CalDAV across per-account hosts and signals the right one via
+  // a redirect; the proxy can't safely auto-follow a PROPFIND/REPORT redirect
+  // (fetch would downgrade it to GET and drop the XML body), so follow it here instead.
+  if (data.status >= 300 && data.status < 400) {
+    if (!data.redirectedTo) {
+      throw new Error(`Apple redirected this request but gave no usable destination (HTTP ${data.status}).`);
+    }
+    if (redirectCount >= MAX_REDIRECTS) {
+      throw new Error('Too many redirects while talking to Apple Calendar.');
+    }
+    return caldavRequest(credentials, method, data.redirectedTo, options, redirectCount + 1);
+  }
+
   return data;
 }
 

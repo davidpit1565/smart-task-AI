@@ -51,7 +51,7 @@ export function ProjectDetailScreen({
     border: '1px solid var(--color-border)',
     background: 'var(--color-bg)',
     color: 'var(--color-text)',
-    fontSize: 14,
+    fontSize: 16,
   };
   const labelStyle: CSSProperties = {
     fontSize: 11.5,

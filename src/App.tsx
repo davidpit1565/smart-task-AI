@@ -14,6 +14,7 @@ import { MoreScreen, type MoreView } from '@/ui/screens/MoreScreen';
 import { CompletedScreen } from '@/ui/screens/CompletedScreen';
 import { ArchivedScreen } from '@/ui/screens/ArchivedScreen';
 import { CalendarScreen } from '@/ui/screens/CalendarScreen';
+import { useDueReminders } from '@/ui/hooks/useDueReminders';
 
 export function App() {
   const [screen, setScreen] = useState<ScreenId>('today');
@@ -34,6 +35,8 @@ export function App() {
   const undo = useTaskStore((s) => s.undo);
   const reorder = useTaskStore((s) => s.reorder);
 
+  useDueReminders(tasks);
+
   const projects = useProjectStore((s) => s.projects);
   const projectsLoaded = useProjectStore((s) => s.loaded);
   const loadProjects = useProjectStore((s) => s.load);
@@ -49,7 +52,7 @@ export function App() {
   const calendarConnecting = useCalendarStore((s) => s.connecting);
   const calendarError = useCalendarStore((s) => s.error);
   const loadCalendar = useCalendarStore((s) => s.load);
-  const connectApple = useCalendarStore((s) => s.connectApple);
+  const connectGoogle = useCalendarStore((s) => s.connectGoogle);
   const disconnectCalendar = useCalendarStore((s) => s.disconnect);
   const syncCalendarProvider = useCalendarStore((s) => s.syncProvider);
   const setCalendarEnabled = useCalendarStore((s) => s.setCalendarEnabled);
@@ -158,9 +161,9 @@ export function App() {
             events={calendarEvents}
             connecting={calendarConnecting}
             error={calendarError}
-            onConnectApple={connectApple}
-            onDisconnectApple={() => disconnectCalendar('apple')}
-            onSync={() => syncCalendarProvider('apple')}
+            onConnectGoogle={connectGoogle}
+            onDisconnectGoogle={() => disconnectCalendar('google')}
+            onSync={() => syncCalendarProvider('google')}
             onToggleCalendar={setCalendarEnabled}
             onConvertToTask={handleConvertEventToTask}
           />

@@ -38,7 +38,7 @@ export function QuickAddBar({ onAdd, placeholder }: QuickAddBarProps) {
           border: '1px solid var(--color-border)',
           background: 'var(--color-bg)',
           color: 'var(--color-text)',
-          fontSize: 15,
+          fontSize: 16,
           transition: 'border-color 0.15s ease',
         }}
       />

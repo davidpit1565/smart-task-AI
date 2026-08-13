@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import type { CalendarEvent, CalendarProviderType, ConnectedCalendar, NewCalendarEventInput } from '@/core/calendar/calendarEvent.types';
 import type { CalendarProvider, DateRange } from '@/core/calendar/calendarProvider';
-import { AppleCalDavProvider } from '@/integrations/calendar/appleCalDavProvider';
+import { GoogleCalendarProvider } from '@/integrations/calendar/googleCalendarProvider';
 import { db, type CalendarConnection } from '@/data/db';
 
-// Google/Outlook are implemented in later phases (8/9) behind this same interface.
+// Apple Calendar (CalDAV) is implemented but removed from the active UI —
+// see docs/PRODUCT_VISION.md. Outlook is a later phase behind this same
+// interface; adding a provider here is the only wiring a new one needs.
 const providers: Partial<Record<CalendarProviderType, CalendarProvider>> = {
-  apple: new AppleCalDavProvider(),
+  google: new GoogleCalendarProvider(),
 };
 
 function defaultSyncRange(): DateRange {
@@ -27,7 +29,7 @@ interface CalendarStoreState {
   error: string | null;
 
   load(): Promise<void>;
-  connectApple(email: string, appSpecificPassword: string): Promise<void>;
+  connectGoogle(): Promise<void>;
   disconnect(providerType: CalendarProviderType): Promise<void>;
   syncProvider(providerType: CalendarProviderType): Promise<void>;
   setCalendarEnabled(calendarId: string, enabled: boolean): Promise<void>;
@@ -53,25 +55,25 @@ export const useCalendarStore = create<CalendarStoreState>((set, get) => ({
     set({ connections, connectedCalendars, events, loaded: true });
   },
 
-  async connectApple(email, appSpecificPassword) {
+  async connectGoogle() {
     set({ connecting: true, error: null });
     try {
-      const provider = providers.apple;
-      if (!provider) throw new Error('Apple Calendar provider is not registered.');
-      const auth = await provider.authenticate({ email, appSpecificPassword });
+      const provider = providers.google;
+      if (!provider) throw new Error('Google Calendar provider is not registered.');
+      const auth = await provider.authenticate(undefined);
 
       const connection: CalendarConnection = {
-        id: 'apple',
-        providerType: 'apple',
+        id: 'google',
+        providerType: 'google',
         accountLabel: auth.accountLabel,
         connectedAt: new Date().toISOString(),
       };
       await db.calendarConnections.put(connection);
-      set((state) => ({ connections: [...state.connections.filter((c) => c.providerType !== 'apple'), connection] }));
+      set((state) => ({ connections: [...state.connections.filter((c) => c.providerType !== 'google'), connection] }));
 
-      await get().syncProvider('apple');
+      await get().syncProvider('google');
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Could not connect to Apple Calendar.' });
+      set({ error: error instanceof Error ? error.message : 'Could not connect to Google Calendar.' });
     } finally {
       set({ connecting: false });
     }

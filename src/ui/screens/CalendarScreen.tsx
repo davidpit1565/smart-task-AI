@@ -1,8 +1,8 @@
-import { useState, type CSSProperties, type FormEvent } from 'react';
+import { useState } from 'react';
 import type { CalendarEvent, ConnectedCalendar } from '@/core/calendar/calendarEvent.types';
 import type { CalendarConnection } from '@/data/db';
 import { useTranslation } from '@/i18n/LanguageContext';
-import { CalendarIcon } from '@/ui/icons';
+import { GoogleIcon } from '@/ui/icons';
 
 interface CalendarScreenProps {
   connections: CalendarConnection[];
@@ -10,8 +10,8 @@ interface CalendarScreenProps {
   events: CalendarEvent[];
   connecting: boolean;
   error: string | null;
-  onConnectApple(email: string, appSpecificPassword: string): Promise<void>;
-  onDisconnectApple(): Promise<void>;
+  onConnectGoogle(): Promise<void>;
+  onDisconnectGoogle(): Promise<void>;
   onSync(): Promise<void>;
   onToggleCalendar(calendarId: string, enabled: boolean): void;
   onConvertToTask(event: CalendarEvent): void;
@@ -23,35 +23,17 @@ export function CalendarScreen({
   events,
   connecting,
   error,
-  onConnectApple,
-  onDisconnectApple,
+  onConnectGoogle,
+  onDisconnectGoogle,
   onSync,
   onToggleCalendar,
   onConvertToTask,
 }: CalendarScreenProps) {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [syncing, setSyncing] = useState(false);
 
-  const appleConnection = connections.find((c) => c.providerType === 'apple');
-  const appleCalendars = connectedCalendars.filter((c) => c.providerType === 'apple');
-
-  const fieldStyle: CSSProperties = {
-    width: '100%',
-    padding: '9px 11px',
-    borderRadius: 'var(--radius-sm)',
-    border: '1px solid var(--color-border)',
-    background: 'var(--color-bg)',
-    color: 'var(--color-text)',
-    fontSize: 14,
-  };
-
-  async function handleConnect(e: FormEvent) {
-    e.preventDefault();
-    await onConnectApple(email, password);
-    setPassword('');
-  }
+  const googleConnection = connections.find((c) => c.providerType === 'google');
+  const googleCalendars = connectedCalendars.filter((c) => c.providerType === 'google');
 
   async function handleSync() {
     setSyncing(true);
@@ -87,28 +69,28 @@ export function CalendarScreen({
           padding: 18,
         }}
       >
-        {appleConnection ? (
+        {googleConnection ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 14, color: 'var(--color-text)' }}>
-                {t('calendar.connectedAs', { email: appleConnection.accountLabel })}
+                {t('calendar.connectedAs', { email: googleConnection.accountLabel })}
               </span>
               <button
                 type="button"
-                onClick={() => onDisconnectApple()}
+                onClick={() => onDisconnectGoogle()}
                 style={{ background: 'none', border: 'none', color: 'var(--color-danger)', fontSize: 13, cursor: 'pointer' }}
               >
                 {t('calendar.disconnect')}
               </button>
             </div>
 
-            {appleCalendars.length > 0 && (
+            {googleCalendars.length > 0 && (
               <div>
                 <div style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 6 }}>
                   {t('calendar.calendars')}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {appleCalendars.map((cal) => (
+                  {googleCalendars.map((cal) => (
                     <label key={cal.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
                       <input type="checkbox" checked={cal.enabled} onChange={(e) => onToggleCalendar(cal.id, e.target.checked)} />
                       <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: cal.color }} />
@@ -138,64 +120,41 @@ export function CalendarScreen({
             </button>
           </div>
         ) : (
-          <form onSubmit={handleConnect} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CalendarIcon width={18} height={18} />
-              <span style={{ fontSize: 15, fontWeight: 600 }}>{t('calendar.connectApple.title')}</span>
+              <GoogleIcon width={18} height={18} />
+              <span style={{ fontSize: 15, fontWeight: 600 }}>{t('calendar.connectGoogle.title')}</span>
             </div>
             <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>
-              {t('calendar.connectApple.description')}
+              {t('calendar.connectGoogle.description')}
             </p>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('calendar.connectApple.email')}
-              style={fieldStyle}
-            />
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t('calendar.connectApple.password')}
-              style={fieldStyle}
-            />
             {error && <p style={{ color: 'var(--color-danger)', fontSize: 12.5, margin: 0 }}>{error}</p>}
             <button
-              type="submit"
+              type="button"
+              onClick={() => onConnectGoogle()}
               disabled={connecting}
               style={{
                 alignSelf: 'flex-start',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
                 padding: '9px 16px',
                 borderRadius: 'var(--radius-md)',
-                border: 'none',
-                background: 'var(--color-accent)',
-                color: 'var(--color-accent-contrast)',
+                border: '1px solid var(--color-border-strong)',
+                background: 'var(--color-surface-raised)',
+                color: 'var(--color-text)',
                 fontWeight: 600,
                 fontSize: 13,
                 cursor: connecting ? 'default' : 'pointer',
               }}
             >
-              {connecting ? t('calendar.connectApple.connecting') : t('calendar.connectApple.connect')}
+              <GoogleIcon width={16} height={16} />
+              {connecting ? t('calendar.connectGoogle.connecting') : t('calendar.connectGoogle.signIn')}
             </button>
-          </form>
+          </div>
         )}
       </section>
 
-      <section
-        style={{
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 18,
-          opacity: 0.55,
-        }}
-      >
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{t('calendar.google.title')}</div>
-        <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', margin: 0 }}>{t('calendar.google.comingSoon')}</p>
-      </section>
       <section
         style={{
           background: 'var(--color-surface)',
@@ -209,7 +168,7 @@ export function CalendarScreen({
         <p style={{ fontSize: 12.5, color: 'var(--color-text-muted)', margin: 0 }}>{t('calendar.outlook.comingSoon')}</p>
       </section>
 
-      {appleConnection && (
+      {googleConnection && (
         <section>
           <div style={{ fontSize: 13.5, fontWeight: 650, letterSpacing: '0.02em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: 8 }}>
             {t('calendar.upcoming')}

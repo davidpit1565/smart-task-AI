@@ -127,6 +127,16 @@ button {
   font-family: inherit;
 }
 
+/* iOS Safari zooms the whole page on focus for any text input under 16px,
+   and doesn't reliably zoom back out. This is only a default for inputs
+   that don't set their own size — every component's inline font-size
+   (below) must independently be >=16px; this doesn't override those. */
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,

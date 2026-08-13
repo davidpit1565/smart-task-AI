@@ -1,5 +1,10 @@
 # PROJECT_STATE
 
+See [`docs/PRODUCT_VISION.md`](./docs/PRODUCT_VISION.md) for the full
+product spec, non-negotiable design rules, and the reconciled phase
+roadmap (extends this file, doesn't replace it) — read that first when
+picking up work, then this file for what's actually shipped so far.
+
 ## Stack decision (locked for Phase 1, revisit only with a measured reason)
 
 Web PWA — Vite + React + TypeScript, offline-first via IndexedDB (Dexie).

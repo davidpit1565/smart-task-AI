@@ -7,10 +7,20 @@ import { selectSubtaskProgress, selectSubtasks } from '@/core/progress';
 import { useTranslation } from '@/i18n/LanguageContext';
 import type { TranslationKey } from '@/i18n/translations';
 import { CheckIcon } from '@/ui/icons';
+import { requestNotificationPermission } from '@/integrations/notifications/notificationManager';
 import { QuickAddBar } from './QuickAddBar';
 import { ScheduleSection } from './ScheduleSection';
 
 const RECURRENCE_OPTIONS: (RecurrenceFrequency | 'none')[] = ['none', 'daily', 'weekly', 'monthly', 'yearly', 'weekdays', 'custom'];
+/** null = no reminder. MVP is a single reminder per task, not the full multi-reminder list from the spec. */
+const REMINDER_OPTIONS: { offsetMinutes: number | null; labelKey: TranslationKey }[] = [
+  { offsetMinutes: null, labelKey: 'reminder.none' },
+  { offsetMinutes: 0, labelKey: 'reminder.atDueTime' },
+  { offsetMinutes: 5, labelKey: 'reminder.5min' },
+  { offsetMinutes: 15, labelKey: 'reminder.15min' },
+  { offsetMinutes: 60, labelKey: 'reminder.1hour' },
+  { offsetMinutes: 60 * 24, labelKey: 'reminder.1day' },
+];
 const WEEKDAY_KEYS: TranslationKey[] = [
   'recurrence.weekdayShort.sun',
   'recurrence.weekdayShort.mon',
@@ -64,6 +74,7 @@ export function TaskDetailPanel({
   const [frequency, setFrequency] = useState<RecurrenceFrequency | 'none'>(task.recurrenceRule?.frequency ?? 'none');
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>(task.recurrenceRule?.daysOfWeek ?? []);
   const [recurrenceEndDate, setRecurrenceEndDate] = useState(task.recurrenceRule?.endDate ?? '');
+  const [reminderOffset, setReminderOffset] = useState<number | null>(task.reminders[0]?.offsetMinutes ?? null);
 
   const subtasks = selectSubtasks(task.id, allTasks);
   const subtaskProgress = selectSubtaskProgress(task.id, allTasks);
@@ -87,6 +98,13 @@ export function TaskDetailPanel({
     setDaysOfWeek((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort()));
   }
 
+  function handleReminderChange(value: string) {
+    const offset = value === '' ? null : Number(value);
+    setReminderOffset(offset);
+    // Only ask for permission right when the user actually turns a reminder on — never proactively.
+    if (offset !== null) requestNotificationPermission();
+  }
+
   function save() {
     onSave(task.id, {
       title: title.trim() || task.title,
@@ -106,6 +124,7 @@ export function TaskDetailPanel({
               daysOfWeek: frequency === 'custom' ? daysOfWeek : undefined,
               endDate: recurrenceEndDate || undefined,
             },
+      reminders: reminderOffset === null ? [] : [{ id: task.reminders[0]?.id ?? crypto.randomUUID(), offsetMinutes: reminderOffset, method: 'push' }],
     });
     onClose();
   }
@@ -117,7 +136,7 @@ export function TaskDetailPanel({
     border: '1px solid var(--color-border)',
     background: 'var(--color-bg)',
     color: 'var(--color-text)',
-    fontSize: 14,
+    fontSize: 16,
     transition: 'border-color 0.15s ease',
   };
 
@@ -324,6 +343,17 @@ export function TaskDetailPanel({
             )}
           </div>
         )}
+
+        <div>
+          <div style={labelStyle}>{t('task.detail.reminder')}</div>
+          <select value={reminderOffset ?? ''} onChange={(e) => handleReminderChange(e.target.value)} style={fieldStyle}>
+            {REMINDER_OPTIONS.map((option) => (
+              <option key={option.labelKey} value={option.offsetMinutes ?? ''}>
+                {t(option.labelKey)}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {!isSubtask && (
           <div>

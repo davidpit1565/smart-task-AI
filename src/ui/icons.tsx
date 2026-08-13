@@ -130,6 +130,69 @@ export function FlagIcon(props: IconProps) {
   );
 }
 
+export function SearchIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M19.5 19.5l-4.3-4.3" />
+    </svg>
+  );
+}
+
+export function FilterIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 6h16M7.5 12h9M10.5 18h3" />
+    </svg>
+  );
+}
+
+export function LinkIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9.5 14.5l5-5" />
+      <path d="M11 6.5l1.3-1.3a3.7 3.7 0 0 1 5.2 5.2L16 12" />
+      <path d="M13 17.5l-1.3 1.3a3.7 3.7 0 0 1-5.2-5.2L8 12" />
+    </svg>
+  );
+}
+
+export function TargetIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="12" cy="12" r="0.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function TimerIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 13V8.5M9.5 3.5h5" />
+    </svg>
+  );
+}
+
+export function PlayIcon(props: IconProps) {
+  return (
+    <svg {...base} fill="currentColor" stroke="none" {...props}>
+      <path d="M7.5 5.2a1 1 0 0 1 1.52-.85l10 6.8a1 1 0 0 1 0 1.7l-10 6.8a1 1 0 0 1-1.52-.85z" />
+    </svg>
+  );
+}
+
+export function PauseIcon(props: IconProps) {
+  return (
+    <svg {...base} fill="currentColor" stroke="none" {...props}>
+      <rect x="6.5" y="4.5" width="4" height="15" rx="1" />
+      <rect x="13.5" y="4.5" width="4" height="15" rx="1" />
+    </svg>
+  );
+}
+
 /** Google's standard multi-color "G" logomark, per Google brand guidelines for sign-in buttons. */
 export function GoogleIcon(props: IconProps) {
   return (

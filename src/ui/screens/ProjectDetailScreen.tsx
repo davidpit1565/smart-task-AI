@@ -72,6 +72,7 @@ export function ProjectDetailScreen({
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={() => name.trim() && onUpdate({ name: name.trim() })}
+          aria-label={t('projectDetail.nameLabel')}
           style={{ ...fieldStyle, border: 'none', background: 'none', fontSize: 21, fontWeight: 650, padding: '2px 0' }}
         />
         <button

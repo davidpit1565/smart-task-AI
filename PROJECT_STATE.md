@@ -254,3 +254,61 @@ occurrences), attachments on calendar events.
 - No fake integrations: if something needs credentials/native code it
   doesn't have yet, it's a documented placeholder, never a fabricated
   success path.
+
+## Overnight autonomous batch (search, dependencies, goals, planner, focus, a11y)
+
+Built while the user was asleep, in the same branch as the Google Calendar/
+mobile-fix/notifications batch (`claude/google-calendar-mobile-fixes`), in
+highest-value order from the `docs/PRODUCT_VISION.md` backlog:
+
+- **Search & filters** (`src/core/search.ts`, `SearchScreen.tsx`, under
+  More): title/description/notes/tag text search plus priority/project/
+  overdue filters, AND-combined. No query + no filter = an intentional empty
+  state ("type to search"), not a full unfiltered dump.
+- **Task dependencies** (`src/core/dependencies.ts`): `Task.dependsOn:
+  string[]`, cycle detection (`wouldCreateCycle`, direct + transitive),
+  `isBlocked`/`getBlockingTasks`. Blocked tasks show a small "Blocked" badge
+  on the row and a "Waiting on: …" banner in the detail panel — completion
+  isn't hard-blocked, this is a soft signal, not a gate.
+- **Goals / Life Areas** (`goal.types.ts`, `goal.repository.ts`,
+  `goalStore.ts`, `GoalsScreen`/`GoalDetailScreen`, under More): one level
+  above Project. `Project.goalId` and `Task.goalId` both roll up into
+  `selectGoalProgress`, so a goal can group whole projects or standalone
+  tasks. Dexie bumped to version 4 (`goals` table); old Task/Project records
+  without `goalId`/`dependsOn` are backfilled via `normalizeTask`/
+  `normalizeProject` on load, no destructive migration needed.
+- **Smart Daily Planner** (`src/core/dailyPlanner.ts`): a "What should I do
+  now?" card on the Today screen. Deliberately a heuristic, not AI —
+  overdue > due-today > high/urgent-priority > everything else, tie-broken
+  by priority then due time then manual order — and says so in its own
+  subtitle copy, honoring "never fake platform capability" for the AI
+  backlog item specifically (a real LLM-backed assistant is still Phase 7,
+  unbuilt, needs a provider/key decision).
+- **Focus Mode** (`src/core/focusSession.ts`, `FocusModeScreen.tsx`): a
+  full-screen timer per task (start/pause/resume/finish) that accumulates
+  into the already-modeled-but-previously-unused `Task.actualDuration`
+  field. Elapsed time is tracked via tick count while running (not wall-
+  clock start/end diff), so pausing can't overcount. Exiting always saves —
+  no silent discard of tracked time.
+- **Accessibility pass**: raised `--color-text-faint` contrast in both
+  themes to meet WCAG AA for normal text (was ~2.8:1 light / ~3.1:1 dark,
+  now ~4.6:1 / ~4.8:1); localized four aria-labels that were hardcoded
+  English (checkbox toggle, drag handle, nav landmark — a Hebrew
+  VoiceOver/TalkBack user was hearing English mid-sentence); added
+  `aria-label`s to three unlabeled inline "heading" inputs (task title,
+  project name, goal name); added an always-present screen-reader-only
+  priority label in `PriorityFlag` (previously the priority was
+  color/icon-only when `showLabel` was false, which is the only way it's
+  actually used today).
+- 114 total unit tests (up from 87), `tsc --noEmit` / `vitest run` / `vite
+  build` / `eslint .` all clean, each feature verified end-to-end with a
+  real Playwright run (not just unit tests) before moving to the next.
+
+**Still open from `docs/PRODUCT_VISION.md`** (not started this batch):
+AI assistant (task breakdown, cleanup, meeting-notes-to-tasks — needs an
+LLM provider/key decision, deliberately not faked), auth + real sync engine,
+Outlook Calendar, full design-token/component-library pass, widgets/
+Capacitor-readiness architecture, Apple Calendar revival (code preserved,
+not wired in), analytics dashboard, remaining accessibility items (focus
+trap + Escape-to-close on the two full-screen/sheet modals, a systematic
+audit beyond the specific bugs fixed above).

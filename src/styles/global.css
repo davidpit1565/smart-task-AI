@@ -4,7 +4,7 @@
   --color-surface-raised: #ffffff;
   --color-text: #1f3245;
   --color-text-muted: #5b6b78;
-  --color-text-faint: #8b98a3;
+  --color-text-faint: #647280;
   --color-border: #e6dcc4;
   --color-border-strong: #d8cca8;
   --color-accent: #b8842e;
@@ -37,7 +37,7 @@
     --color-surface-raised: #22303d;
     --color-text: #f3ecd7;
     --color-text-muted: #9faab3;
-    --color-text-faint: #5c6b78;
+    --color-text-faint: #7c8b96;
     --color-border: #2a3944;
     --color-border-strong: #3b4c59;
     --color-accent: #e8b563;
@@ -64,7 +64,7 @@
   --color-surface-raised: #22303d;
   --color-text: #f3ecd7;
   --color-text-muted: #9faab3;
-  --color-text-faint: #5c6b78;
+  --color-text-faint: #7c8b96;
   --color-border: #2a3944;
   --color-border-strong: #3b4c59;
   --color-accent: #e8b563;
@@ -147,6 +147,20 @@ select:focus-visible {
 
 ::selection {
   background: var(--color-accent-soft);
+}
+
+/* Visually hidden but still announced by screen readers — for context that's conveyed
+   visually through color/icon alone and needs a text equivalent. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 #root {

@@ -66,8 +66,11 @@ export interface Task {
   categoryId: string | null;
   projectId: string | null;
   parentTaskId: string | null;
+  goalId: string | null;
 
   tags: string[];
+  /** IDs of tasks that must be completed before this one — see core/dependencies.ts. */
+  dependsOn: string[];
   recurrenceRule: RecurrenceRule | null;
   reminders: Reminder[];
   attachments: AttachmentMeta[];
@@ -106,7 +109,9 @@ export function createTask(input: NewTaskInput, now: () => string = () => new Da
     categoryId: input.categoryId ?? null,
     projectId: input.projectId ?? null,
     parentTaskId: input.parentTaskId ?? null,
+    goalId: input.goalId ?? null,
     tags: input.tags ?? [],
+    dependsOn: input.dependsOn ?? [],
     recurrenceRule: input.recurrenceRule ?? null,
     reminders: input.reminders ?? [],
     attachments: input.attachments ?? [],
@@ -118,6 +123,15 @@ export function createTask(input: NewTaskInput, now: () => string = () => new Da
     calendarEventId: input.calendarEventId ?? null,
     createdFromAI: input.createdFromAI ?? false,
     metadata: input.metadata ?? {},
+  };
+}
+
+/** Backfills fields added after some tasks were already persisted, so old IndexedDB records stay valid. */
+export function normalizeTask(task: Task): Task {
+  return {
+    ...task,
+    goalId: task.goalId ?? null,
+    dependsOn: task.dependsOn ?? [],
   };
 }
 

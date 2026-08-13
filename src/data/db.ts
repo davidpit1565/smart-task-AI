@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import type { Task } from '@/core/task.types';
 import type { Project } from '@/core/project.types';
+import type { Goal } from '@/core/goal.types';
 import type { CalendarEvent, CalendarProviderType, ConnectedCalendar } from '@/core/calendar/calendarEvent.types';
 
 interface AttachmentBlobRow {
@@ -23,6 +24,7 @@ export interface CalendarConnection {
 export class SmartTasksDatabase extends Dexie {
   tasks!: Table<Task, string>;
   projects!: Table<Project, string>;
+  goals!: Table<Goal, string>;
   attachmentBlobs!: Table<AttachmentBlobRow, string>;
   calendarConnections!: Table<CalendarConnection, string>;
   connectedCalendars!: Table<ConnectedCalendar, string>;
@@ -42,6 +44,15 @@ export class SmartTasksDatabase extends Dexie {
     this.version(3).stores({
       tasks: 'id, status, projectId, parentTaskId, dueDate, order',
       projects: 'id, status, order',
+      attachmentBlobs: 'id',
+      calendarConnections: 'id, providerType',
+      connectedCalendars: 'id, providerType',
+      calendarEvents: 'id, connectedCalendarId, start, taskId',
+    });
+    this.version(4).stores({
+      tasks: 'id, status, projectId, parentTaskId, dueDate, order',
+      projects: 'id, status, order',
+      goals: 'id, status, order',
       attachmentBlobs: 'id',
       calendarConnections: 'id, providerType',
       connectedCalendars: 'id, providerType',

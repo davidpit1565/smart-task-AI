@@ -1,6 +1,8 @@
 import type { Task } from '@/core/task.types';
 import { selectGreetingPeriod, selectOverdueTasks, selectTodayProgress, selectTodayTasks } from '@/core/todaySelectors';
+import { suggestTasks } from '@/core/dailyPlanner';
 import { useTranslation } from '@/i18n/LanguageContext';
+import { DailySuggestionCard } from '@/ui/components/DailySuggestionCard';
 import { ProgressBar } from '@/ui/components/ProgressBar';
 import { SectionHeader } from '@/ui/components/SectionHeader';
 import { TaskList } from '@/ui/components/TaskList';
@@ -18,6 +20,7 @@ export function TodayScreen({ tasks, onToggleComplete, onOpen, onReorder }: Toda
   const today = selectTodayTasks(tasks);
   const progress = selectTodayProgress(tasks);
   const greeting = t(`today.greeting.${selectGreetingPeriod()}`);
+  const suggestions = suggestTasks(tasks, tasks);
 
   return (
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -44,6 +47,14 @@ export function TodayScreen({ tasks, onToggleComplete, onOpen, onReorder }: Toda
           </div>
         )}
       </div>
+
+      <DailySuggestionCard
+        suggestions={suggestions}
+        onOpen={(taskId) => {
+          const task = tasks.find((t) => t.id === taskId);
+          if (task) onOpen(task);
+        }}
+      />
 
       {overdue.length > 0 && (
         <section>

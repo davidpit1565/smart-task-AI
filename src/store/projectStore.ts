@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createProject, type NewProjectInput, type Project } from '@/core/project.types';
+import { createProject, normalizeProject, type NewProjectInput, type Project } from '@/core/project.types';
 import type { ProjectRepository } from '@/core/project.repository';
 import { DexieProjectRepository } from '@/data/dexieProjectRepository';
 import { db } from '@/data/db';
@@ -27,7 +27,7 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
   repository: new DexieProjectRepository(db),
 
   async load() {
-    const projects = await get().repository.getAll();
+    const projects = (await get().repository.getAll()).map(normalizeProject);
     set({ projects, loaded: true });
   },
 

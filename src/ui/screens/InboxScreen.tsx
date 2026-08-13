@@ -21,7 +21,7 @@ export function InboxScreen({ tasks, onAdd, onToggleComplete, onOpen, onReorder 
       <h1 style={{ fontSize: 23, margin: '20px 16px 4px' }}>{t('inbox.title')}</h1>
       <QuickAddBar onAdd={onAdd} />
       <div style={{ padding: '0 8px' }}>
-        <TaskList tasks={inboxTasks} onToggleComplete={onToggleComplete} onOpen={onOpen} onReorder={onReorder} emptyMessage={t('inbox.empty')} />
+        <TaskList tasks={inboxTasks} allTasks={tasks} onToggleComplete={onToggleComplete} onOpen={onOpen} onReorder={onReorder} emptyMessage={t('inbox.empty')} />
       </div>
     </div>
   );

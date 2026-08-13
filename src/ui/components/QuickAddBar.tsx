@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from '@/i18n/LanguageContext';
 
-export function QuickAddBar({ onAdd }: { onAdd(title: string): void }) {
+interface QuickAddBarProps {
+  onAdd(title: string): void;
+  placeholder?: string;
+}
+
+export function QuickAddBar({ onAdd, placeholder }: QuickAddBarProps) {
   const { t } = useTranslation();
   const [value, setValue] = useState('');
+  const resolvedPlaceholder = placeholder ?? t('inbox.quickAdd.placeholder');
 
   function submit() {
     const title = value.trim();
@@ -23,8 +29,8 @@ export function QuickAddBar({ onAdd }: { onAdd(title: string): void }) {
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={t('inbox.quickAdd.placeholder')}
-        aria-label={t('inbox.quickAdd.placeholder')}
+        placeholder={resolvedPlaceholder}
+        aria-label={resolvedPlaceholder}
         style={{
           flex: 1,
           padding: '11px 14px',
@@ -38,7 +44,7 @@ export function QuickAddBar({ onAdd }: { onAdd(title: string): void }) {
       />
       <button
         type="submit"
-        aria-label={t('inbox.quickAdd.placeholder')}
+        aria-label={resolvedPlaceholder}
         style={{
           width: 44,
           borderRadius: 'var(--radius-md)',

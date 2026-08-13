@@ -86,6 +86,42 @@ export function DragHandleIcon(props: IconProps) {
   );
 }
 
+/** Points to logical "back" (start) in LTR. Callers in RTL contexts should mirror it, e.g. via CSS transform: scaleX(-1). */
+export function ChevronBackIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M15 5l-7 7 7 7" />
+    </svg>
+  );
+}
+
+export function PlusIcon(props: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2} {...props}>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+export function TrashIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4.5 6.5h15M9.5 6.5V4.8a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1.7M18 6.5l-.8 12.3a2 2 0 0 1-2 1.9H8.8a2 2 0 0 1-2-1.9L6 6.5" />
+      <path d="M10 10.5v6M14 10.5v6" />
+    </svg>
+  );
+}
+
+export function ArchiveIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3.5" y="4.5" width="17" height="4.5" rx="1.2" />
+      <path d="M5 9v9a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 18V9" />
+      <path d="M10 13h4" />
+    </svg>
+  );
+}
+
 export function FlagIcon(props: IconProps) {
   return (
     <svg {...base} fill="currentColor" stroke="none" {...props}>

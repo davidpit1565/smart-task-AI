@@ -49,6 +49,12 @@ describe('selectInboxTasks', () => {
     const projectTask = createTask({ title: 'in project', projectId: 'p1', order: 0 });
     expect(selectInboxTasks([first, second, scheduled, projectTask])).toEqual([second, first]);
   });
+
+  it('excludes subtasks even if they otherwise look unorganized', () => {
+    const standalone = createTask({ title: 'standalone' });
+    const subtask = createTask({ title: 'subtask', parentTaskId: 'parent-1' });
+    expect(selectInboxTasks([standalone, subtask])).toEqual([standalone]);
+  });
 });
 
 describe('selectGreetingPeriod', () => {

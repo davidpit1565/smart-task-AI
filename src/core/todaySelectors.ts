@@ -30,10 +30,10 @@ export function selectTodayProgress(tasks: Task[], referenceDate = new Date()): 
   };
 }
 
-/** Tasks not yet organized: no due date and no project assigned yet. */
+/** Tasks not yet organized: no due date, no project, and not a subtask of something else. */
 export function selectInboxTasks(tasks: Task[]): Task[] {
   return tasks
-    .filter((t) => t.status === 'pending' && !t.dueDate && !t.projectId)
+    .filter((t) => t.status === 'pending' && !t.dueDate && !t.projectId && !t.parentTaskId)
     .sort((a, b) => a.order - b.order);
 }
 

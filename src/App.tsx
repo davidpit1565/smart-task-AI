@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { CalendarEvent } from '@/core/calendar/calendarEvent.types';
+import { parseDeepLink, shareTargetToTaskInput } from '@/core/deepLink';
 import { useTaskStore } from '@/store/taskStore';
 import { useProjectStore } from '@/store/projectStore';
 import { useGoalStore } from '@/store/goalStore';
@@ -29,6 +30,7 @@ export function App() {
   const [toast, setToast] = useState<'completed' | 'deleted' | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [deepLinkHandled, setDeepLinkHandled] = useState(false);
   const [moreView, setMoreView] = useState<MoreView | null>(null);
 
   const tasks = useTaskStore((s) => s.tasks);
@@ -83,6 +85,22 @@ export function App() {
     loadGoals();
     loadCalendar();
   }, [load, loadProjects, loadGoals, loadCalendar]);
+
+  // Handles Web Share Target payloads and install-shortcut/task deep links — see core/deepLink.ts.
+  useEffect(() => {
+    if (!loaded || deepLinkHandled) return;
+    setDeepLinkHandled(true);
+
+    const action = parseDeepLink(window.location.search);
+    if (action.screen) setScreen(action.screen);
+    if (action.taskId) setOpenTaskId(action.taskId);
+    if (action.shareTarget) {
+      addTask(shareTargetToTaskInput(action.shareTarget)).then((task) => setOpenTaskId(task.id));
+    }
+    if (window.location.search) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [loaded, deepLinkHandled, addTask]);
 
   const visibleTasks = tasks.filter((t) => t.status === 'pending' || t.status === 'completed');
   const nonTrashedTasks = tasks.filter((t) => t.status !== 'trashed');

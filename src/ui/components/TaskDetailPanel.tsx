@@ -1,4 +1,5 @@
-import { useState, type CSSProperties } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
+import { useModalA11y } from '@/ui/hooks/useModalA11y';
 import type { Priority, RecurrenceFrequency, Task } from '@/core/task.types';
 import { PRIORITIES } from '@/core/task.types';
 import type { Project } from '@/core/project.types';
@@ -67,6 +68,8 @@ export function TaskDetailPanel({
   onStartFocus,
 }: TaskDetailPanelProps) {
   const { t } = useTranslation();
+  const sheetRef = useRef<HTMLDivElement>(null);
+  useModalA11y(sheetRef, onClose);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
   const [notes, setNotes] = useState(task.notes);
@@ -178,8 +181,6 @@ export function TaskDetailPanel({
 
   return (
     <div
-      role="dialog"
-      aria-modal="true"
       style={{
         position: 'fixed',
         inset: 0,
@@ -191,6 +192,11 @@ export function TaskDetailPanel({
       onClick={onClose}
     >
       <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('task.detail.dialogLabel')}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: 'var(--color-surface-raised)',

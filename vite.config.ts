@@ -27,6 +27,23 @@ export default defineConfig({
           { src: 'icon-192.svg', sizes: '192x192', type: 'image/svg+xml' },
           { src: 'icon-512.svg', sizes: '512x512', type: 'image/svg+xml' },
         ],
+        // Long-press the installed icon for these — real, works today, no native shell needed.
+        shortcuts: [
+          { name: 'Today', url: '/?screen=today', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }] },
+          { name: 'Inbox', url: '/?screen=inbox', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }] },
+        ],
+        // Registers the app as an OS share target (Android/ChromeOS today; iOS Safari doesn't
+        // support share_target yet). Sharing a link/text to the installed app creates a task from
+        // it — see core/deepLink.ts for the parsing contract this pairs with.
+        share_target: {
+          action: '/',
+          method: 'GET',
+          params: {
+            title: 'title',
+            text: 'text',
+            url: 'url',
+          },
+        },
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico}'],

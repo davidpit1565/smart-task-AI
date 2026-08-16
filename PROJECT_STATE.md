@@ -320,11 +320,35 @@ Two more shipped in the same overnight window, same branch:
 - 133 total unit tests (up from 114), full gate green, both verified
   end-to-end with Playwright.
 
+## Focus trap, deep links, and the native-shell contract (PR #9)
+
+- **Focus trap + Escape-to-close** (`src/ui/hooks/useModalA11y.ts`): the
+  accessibility item explicitly left open above. Wired into
+  `TaskDetailPanel` and `FocusModeScreen` — Tab/Shift+Tab now stays inside
+  the modal, Escape closes it, and focus returns to whatever triggered it.
+  Also moved `TaskDetailPanel`'s `role="dialog"` from the decorative
+  backdrop div onto the actual sheet content, where it belongs.
+- **Deep links, install shortcuts, and a real Web Share Target**
+  (`src/core/deepLink.ts`, `manifest.shortcuts`/`manifest.share_target` in
+  `vite.config.ts`): `?screen=`/`?task=` query params open a specific
+  tab/task; long-pressing the installed icon (Android) jumps straight to
+  Today/Inbox; sharing a link or text to the installed app from any other
+  app's share sheet creates a task from it. All three are genuinely
+  implemented and Playwright-verified today — none of this is native-only.
+- **`docs/NATIVE_SHELL_CONTRACT.md`** (new): the Capacitor phase from the
+  roadmap below, done as architecture-only per the "don't fake native
+  capability" rule — documents exactly what a native wrapper would still
+  need to add (widgets, Siri Shortcuts/App Intents, iOS's native Share
+  Extension) and the precise data contract each would read from or write
+  to, all built on the same deep-link shape above so nothing in `core/` or
+  `store/` needs to change when that phase actually starts.
+- 150 total unit tests (up from 133), full gate green, all three pieces
+  verified end-to-end with Playwright, not just unit-tested.
+
 **Still open from `docs/PRODUCT_VISION.md`** (not started this batch):
 AI assistant (task breakdown, cleanup, meeting-notes-to-tasks — needs an
 LLM provider/key decision, deliberately not faked), auth + real sync engine,
-full design-token/component-library pass, widgets/Capacitor-readiness
-architecture, Apple Calendar revival (code preserved, not wired in),
-remaining accessibility items (focus trap + Escape-to-close on the two
-full-screen/sheet modals, a systematic audit beyond the specific bugs fixed
-above).
+full design-token/component-library pass, the native-shell build-out
+`docs/NATIVE_SHELL_CONTRACT.md` documents but doesn't implement, Apple
+Calendar revival (code preserved, not wired in), a systematic accessibility
+audit beyond the specific bugs fixed so far.

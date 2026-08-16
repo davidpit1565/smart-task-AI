@@ -42,6 +42,7 @@ const en = {
   'task.action.dragReorder': 'Drag to reorder',
   'nav.landmarkLabel': 'Main navigation',
   'task.detail.titleLabel': 'Task title',
+  'task.detail.dialogLabel': 'Task details',
   'projectDetail.nameLabel': 'Project name',
   'goals.nameLabel': 'Goal name',
 
@@ -236,6 +237,7 @@ const he: Record<TranslationKey, string> = {
   'task.action.dragReorder': 'גרירה לשינוי סדר',
   'nav.landmarkLabel': 'ניווט ראשי',
   'task.detail.titleLabel': 'כותרת המשימה',
+  'task.detail.dialogLabel': 'פרטי המשימה',
   'projectDetail.nameLabel': 'שם הפרויקט',
   'goals.nameLabel': 'שם המטרה',
 

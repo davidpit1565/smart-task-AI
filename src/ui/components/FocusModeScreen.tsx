@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Task } from '@/core/task.types';
 import { formatElapsed, secondsToTrackedMinutes } from '@/core/focusSession';
 import { useTranslation } from '@/i18n/LanguageContext';
+import { useModalA11y } from '@/ui/hooks/useModalA11y';
 import { ChevronBackIcon, PauseIcon, PlayIcon } from '@/ui/icons';
 
 interface FocusModeScreenProps {
@@ -25,11 +26,16 @@ export function FocusModeScreen({ task, onFinish }: FocusModeScreenProps) {
     onFinish(secondsToTrackedMinutes(elapsedSeconds));
   }
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  useModalA11y(containerRef, finish);
+
   return (
     <div
+      ref={containerRef}
       role="dialog"
       aria-modal="true"
       aria-label={t('focus.title')}
+      tabIndex={-1}
       style={{
         position: 'fixed',
         inset: 0,

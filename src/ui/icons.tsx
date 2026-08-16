@@ -204,6 +204,15 @@ export function OutlookIcon(props: IconProps) {
   );
 }
 
+export function SparkleIcon(props: IconProps) {
+  return (
+    <svg {...base} fill="currentColor" stroke="none" {...props}>
+      <path d="M11 3a1 1 0 0 1 .97.76l.9 3.62a4 4 0 0 0 2.9 2.9l3.62.9a1 1 0 0 1 0 1.94l-3.62.9a4 4 0 0 0-2.9 2.9l-.9 3.62a1 1 0 0 1-1.94 0l-.9-3.62a4 4 0 0 0-2.9-2.9l-3.62-.9a1 1 0 0 1 0-1.94l3.62-.9a4 4 0 0 0 2.9-2.9l.9-3.62A1 1 0 0 1 11 3z" />
+      <path d="M18.5 2.5a.6.6 0 0 1 .58.45l.24.98a1.4 1.4 0 0 0 1.02 1.02l.98.24a.6.6 0 0 1 0 1.16l-.98.24a1.4 1.4 0 0 0-1.02 1.02l-.24.98a.6.6 0 0 1-1.16 0l-.24-.98a1.4 1.4 0 0 0-1.02-1.02l-.98-.24a.6.6 0 0 1 0-1.16l.98-.24a1.4 1.4 0 0 0 1.02-1.02l.24-.98a.6.6 0 0 1 .58-.45z" />
+    </svg>
+  );
+}
+
 /** Google's standard multi-color "G" logomark, per Google brand guidelines for sign-in buttons. */
 export function GoogleIcon(props: IconProps) {
   return (

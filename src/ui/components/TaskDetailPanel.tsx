@@ -9,8 +9,9 @@ import { selectSubtaskProgress, selectSubtasks } from '@/core/progress';
 import { getBlockingTasks, wouldCreateCycle } from '@/core/dependencies';
 import { useTranslation } from '@/i18n/LanguageContext';
 import type { TranslationKey } from '@/i18n/translations';
-import { CheckIcon, TimerIcon } from '@/ui/icons';
+import { CheckIcon, SparkleIcon, TimerIcon } from '@/ui/icons';
 import { requestNotificationPermission } from '@/integrations/notifications/notificationManager';
+import { requestTaskBreakdown } from '@/integrations/ai/aiBreakdownClient';
 import { QuickAddBar } from './QuickAddBar';
 import { ScheduleSection } from './ScheduleSection';
 
@@ -86,6 +87,10 @@ export function TaskDetailPanel({
   const [recurrenceEndDate, setRecurrenceEndDate] = useState(task.recurrenceRule?.endDate ?? '');
   const [reminderOffset, setReminderOffset] = useState<number | null>(task.reminders[0]?.offsetMinutes ?? null);
   const [dependsOn, setDependsOn] = useState<string[]>(task.dependsOn);
+  const [breakdownLoading, setBreakdownLoading] = useState(false);
+  const [breakdownError, setBreakdownError] = useState<string | null>(null);
+  const [breakdownSuggestions, setBreakdownSuggestions] = useState<string[] | null>(null);
+  const [breakdownChecked, setBreakdownChecked] = useState<boolean[]>([]);
 
   const subtasks = selectSubtasks(task.id, allTasks);
   const subtaskProgress = selectSubtaskProgress(task.id, allTasks);
@@ -131,6 +136,27 @@ export function TaskDetailPanel({
     setReminderOffset(offset);
     // Only ask for permission right when the user actually turns a reminder on — never proactively.
     if (offset !== null) requestNotificationPermission();
+  }
+
+  async function handleBreakdown() {
+    setBreakdownLoading(true);
+    setBreakdownError(null);
+    try {
+      const suggestions = await requestTaskBreakdown(title, description);
+      setBreakdownSuggestions(suggestions);
+      setBreakdownChecked(suggestions.map(() => true));
+    } catch (error) {
+      setBreakdownError(error instanceof Error ? error.message : 'AI breakdown failed.');
+    } finally {
+      setBreakdownLoading(false);
+    }
+  }
+
+  function confirmBreakdown() {
+    breakdownSuggestions?.forEach((suggestion, index) => {
+      if (breakdownChecked[index]) onAddSubtask(task.id, suggestion);
+    });
+    setBreakdownSuggestions(null);
   }
 
   function save() {
@@ -535,6 +561,100 @@ export function TaskDetailPanel({
               </ul>
             )}
             <QuickAddBar onAdd={(subtaskTitle) => onAddSubtask(task.id, subtaskTitle)} placeholder={t('task.detail.subtasks.placeholder')} />
+
+            <button
+              type="button"
+              onClick={handleBreakdown}
+              disabled={breakdownLoading}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                width: '100%',
+                marginTop: 8,
+                padding: '9px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px dashed var(--color-border-strong)',
+                background: 'none',
+                color: 'var(--color-accent)',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: breakdownLoading ? 'default' : 'pointer',
+              }}
+            >
+              <SparkleIcon width={14} height={14} />
+              {breakdownLoading ? t('task.detail.breakdown.loading') : t('task.detail.breakdown.action')}
+            </button>
+
+            {breakdownError && (
+              <p style={{ color: 'var(--color-danger)', fontSize: 12.5, margin: '6px 0 0' }}>{breakdownError}</p>
+            )}
+
+            {breakdownSuggestions && (
+              <div
+                style={{
+                  marginTop: 8,
+                  padding: 12,
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
+                  background: 'var(--color-bg)',
+                }}
+              >
+                <div style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 8 }}>
+                  {t('task.detail.breakdown.previewTitle')}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+                  {breakdownSuggestions.map((suggestion, index) => (
+                    <label key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: 'var(--color-text)' }}>
+                      <input
+                        type="checkbox"
+                        checked={breakdownChecked[index] ?? false}
+                        onChange={(e) =>
+                          setBreakdownChecked((prev) => prev.map((checked, i) => (i === index ? e.target.checked : checked)))
+                        }
+                      />
+                      {suggestion}
+                    </label>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={confirmBreakdown}
+                    disabled={!breakdownChecked.some(Boolean)}
+                    style={{
+                      padding: '7px 14px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: 'none',
+                      background: 'var(--color-accent)',
+                      color: 'var(--color-accent-contrast)',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: breakdownChecked.some(Boolean) ? 'pointer' : 'default',
+                    }}
+                  >
+                    {t('task.detail.breakdown.add')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBreakdownSuggestions(null)}
+                    style={{
+                      padding: '7px 14px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--color-border)',
+                      background: 'none',
+                      color: 'var(--color-text-muted)',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t('task.detail.breakdown.cancel')}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

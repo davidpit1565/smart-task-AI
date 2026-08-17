@@ -16,47 +16,62 @@ const ITEMS: { id: ScreenId; labelKey: TranslationKey; Icon: ComponentType<{ wid
 export function BottomNav({ active, onChange }: { active: ScreenId; onChange(id: ScreenId): void }) {
   const { t } = useTranslation();
   return (
-    <nav
-      aria-label={t('nav.landmarkLabel')}
-      style={{
-        display: 'flex',
-        justifyContent: 'space-around',
-        borderTop: '1px solid var(--color-border)',
-        background: 'var(--color-surface)',
-        paddingTop: 6,
-        paddingBottom: 'calc(6px + env(safe-area-inset-bottom))',
-      }}
-    >
-      {ITEMS.map(({ id, labelKey, Icon }) => {
-        const isActive = id === active;
-        return (
-          <button
-            key={id}
-            type="button"
-            onClick={() => onChange(id)}
-            aria-current={isActive ? 'page' : undefined}
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 3,
-              padding: '6px 4px',
-              background: 'none',
-              border: 'none',
-              color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
-              cursor: 'pointer',
-              fontSize: 11,
-              fontWeight: isActive ? 600 : 500,
-              letterSpacing: '0.01em',
-              transition: 'color 0.15s ease',
-            }}
-          >
-            <Icon width={21} height={21} />
-            {t(labelKey)}
-          </button>
-        );
-      })}
-    </nav>
+    <div style={{ padding: '0 12px calc(10px + env(safe-area-inset-bottom))' }}>
+      <nav
+        className="glass"
+        aria-label={t('nav.landmarkLabel')}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-around',
+          borderRadius: 'var(--radius-xl)',
+          boxShadow: 'var(--shadow-tile)',
+          padding: '6px 4px',
+        }}
+      >
+        {ITEMS.map(({ id, labelKey, Icon }) => {
+          const isActive = id === active;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onChange(id)}
+              aria-current={isActive ? 'page' : undefined}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 3,
+                padding: '6px 4px',
+                background: 'none',
+                border: 'none',
+                color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                cursor: 'pointer',
+                fontSize: 11,
+                fontWeight: isActive ? 700 : 500,
+                letterSpacing: '0.01em',
+                transition: 'color 0.15s ease',
+              }}
+            >
+              <span
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 40,
+                  height: 26,
+                  borderRadius: 999,
+                  background: isActive ? 'var(--color-accent-soft)' : 'transparent',
+                  transition: 'background-color 0.15s ease',
+                }}
+              >
+                <Icon width={21} height={21} />
+              </span>
+              {t(labelKey)}
+            </button>
+          );
+        })}
+      </nav>
+    </div>
   );
 }

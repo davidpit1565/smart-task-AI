@@ -195,7 +195,13 @@ export function App() {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <main style={{ flex: 1, overflowY: 'auto' }}>
         {screen === 'today' && (
-          <TodayScreen tasks={visibleTasks} onToggleComplete={handleToggleComplete} onOpen={(task) => setOpenTaskId(task.id)} onReorder={reorder} />
+          <TodayScreen
+            tasks={visibleTasks}
+            onToggleComplete={handleToggleComplete}
+            onOpen={(task) => setOpenTaskId(task.id)}
+            onReorder={reorder}
+            onNavigate={setScreen}
+          />
         )}
         {screen === 'inbox' && (
           <InboxScreen

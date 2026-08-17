@@ -130,6 +130,16 @@ export function FlagIcon(props: IconProps) {
   );
 }
 
+export function AlertIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 2.5a1.4 1.4 0 0 1 1.22.7l7.88 13.6a1.4 1.4 0 0 1-1.22 2.1H4.12a1.4 1.4 0 0 1-1.22-2.1L10.78 3.2A1.4 1.4 0 0 1 12 2.5z" />
+      <path d="M12 9v4.5" strokeLinecap="round" />
+      <circle cx="12" cy="16.7" r="0.25" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function SearchIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>

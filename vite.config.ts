@@ -13,8 +13,8 @@ export default defineConfig({
         name: 'Smart Tasks AI',
         short_name: 'SmartTasks',
         description: 'AI-assisted smart task management and productivity app',
-        theme_color: '#1F3245',
-        background_color: '#FBF7EE',
+        theme_color: '#0A0E14',
+        background_color: '#0A0E14',
         display: 'standalone',
         start_url: '/',
         icons: [

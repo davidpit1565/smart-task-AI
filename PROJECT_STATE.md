@@ -15,7 +15,16 @@ Calendar (CalDAV, not EventKit) and native-only features (widgets, Siri,
 Watch — need a native companion app later; architecture below leaves room
 for that without a rewrite).
 
-## Visual identity: "Field Notes" (locked — this is the brand now, not a placeholder theme)
+## Visual identity: "Glass" (current — supersedes Field Notes below)
+
+Retired by David in favor of an Apple Liquid Glass–inspired identity, from
+reference screenshots of the native Reminders app. Full spec, rationale,
+and the accessibility guardrails that keep it from repeating Apple's own
+documented Liquid Glass contrast complaints: `docs/DESIGN_LIQUID_GLASS.md`.
+The Field Notes section right below is kept as history, not current design
+— every color/radius/font token it documents has been replaced.
+
+## Visual identity: "Field Notes" (superseded by "Glass" above — kept as history)
 
 Chosen by David from four fully-built concept directions (Instrument,
 Undergrowth, Afterhours, Field Notes — presented as an interactive board

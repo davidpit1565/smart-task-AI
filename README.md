@@ -114,4 +114,25 @@ for the full story. Revisit only if there's a specific reason to.
 
 Native-only features (Home Screen/Lock Screen widgets, Siri Shortcuts,
 Spotlight, Apple Watch) are architected for but require a native companion
-app to actually ship — see `PROJECT_STATE.md`.
+app to actually ship — see `docs/NATIVE_SHELL_CONTRACT.md` for exactly what
+that companion app would need to add, and note that deep links, install
+shortcuts, and a real Web Share Target (Android/ChromeOS) already work
+today without any native shell — see `src/core/deepLink.ts`.
+
+## AI features
+
+Task breakdown ("Break down with AI" in the task detail panel) calls a
+Vercel serverless function (`api/ai/breakdown.ts`) that asks Claude for a
+short list of subtasks. The API key never reaches the browser — only the
+function calls Anthropic directly — and suggestions are always shown as a
+preview with per-item checkboxes before anything is added; nothing is ever
+applied automatically.
+
+Setup: get an API key from the
+[Anthropic Console](https://console.anthropic.com), then set
+`ANTHROPIC_API_KEY` (in `.env.local` or your host's env vars — **not**
+prefixed with `VITE_`, since this one must stay server-side only). Without
+it, the button shows a clear "AI features aren't configured yet" error
+instead of pretending to work — same pattern as the calendar integrations
+above. Like `/api/caldav`, this endpoint only responds under `vercel dev`
+or in a real Vercel deployment, not plain `npm run dev`.

@@ -43,6 +43,11 @@ const en = {
   'nav.landmarkLabel': 'Main navigation',
   'task.detail.titleLabel': 'Task title',
   'task.detail.dialogLabel': 'Task details',
+  'task.detail.breakdown.action': 'Break down with AI',
+  'task.detail.breakdown.loading': 'Thinking…',
+  'task.detail.breakdown.previewTitle': 'Suggested subtasks — review before adding',
+  'task.detail.breakdown.add': 'Add selected',
+  'task.detail.breakdown.cancel': 'Cancel',
   'projectDetail.nameLabel': 'Project name',
   'goals.nameLabel': 'Goal name',
 
@@ -238,6 +243,11 @@ const he: Record<TranslationKey, string> = {
   'nav.landmarkLabel': 'ניווט ראשי',
   'task.detail.titleLabel': 'כותרת המשימה',
   'task.detail.dialogLabel': 'פרטי המשימה',
+  'task.detail.breakdown.action': 'פירוק עם AI',
+  'task.detail.breakdown.loading': 'חושב…',
+  'task.detail.breakdown.previewTitle': 'תת-משימות מוצעות — סקירה לפני הוספה',
+  'task.detail.breakdown.add': 'הוספת הנבחרות',
+  'task.detail.breakdown.cancel': 'ביטול',
   'projectDetail.nameLabel': 'שם הפרויקט',
   'goals.nameLabel': 'שם המטרה',
 

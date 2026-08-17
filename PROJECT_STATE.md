@@ -345,10 +345,33 @@ Two more shipped in the same overnight window, same branch:
 - 150 total unit tests (up from 133), full gate green, all three pieces
   verified end-to-end with Playwright, not just unit-tested.
 
-**Still open from `docs/PRODUCT_VISION.md`** (not started this batch):
-AI assistant (task breakdown, cleanup, meeting-notes-to-tasks — needs an
-LLM provider/key decision, deliberately not faked), auth + real sync engine,
-full design-token/component-library pass, the native-shell build-out
-`docs/NATIVE_SHELL_CONTRACT.md` documents but doesn't implement, Apple
-Calendar revival (code preserved, not wired in), a systematic accessibility
-audit beyond the specific bugs fixed so far.
+## AI task breakdown (PR #10)
+
+- **First real AI feature** (`api/ai/breakdown.ts`, `src/core/aiBreakdown.ts`,
+  `src/integrations/ai/aiBreakdownClient.ts`, wired into `TaskDetailPanel`):
+  "Break down with AI" calls Claude (via a Vercel function, same
+  never-reaches-the-browser API-key pattern as the calendar OAuth secrets)
+  for a short list of subtask suggestions, shown as a checkbox preview —
+  nothing is added until the user picks which ones and confirms. Honest
+  gate on missing `ANTHROPIC_API_KEY`, same shape as the Google/Microsoft
+  Client ID gates.
+- Resolves the specific decision the previous "AI assistant... needs a
+  provider/key decision" backlog note was waiting on: Anthropic, via a
+  thin serverless proxy, following the exact pattern already established
+  for calendar credentials.
+- Still scoped narrowly to task breakdown — "cleanup" and "meeting notes to
+  tasks" from the original master spec are not built yet; the same
+  `api/ai/*` + preview-before-apply pattern extends to those without an
+  architecture change.
+- 11 new unit tests (161 total), full gate green, both the honest-failure
+  path (verified under plain `vite preview`, where `/api/*` isn't served —
+  confirms it fails gracefully, not with a crash) and the full accept/
+  reject flow (mocked response, confirmed accepted suggestions become real
+  subtasks and rejected ones don't) verified end-to-end with Playwright.
+
+**Still open from `docs/PRODUCT_VISION.md`** (not started yet): AI cleanup
+and meeting-notes-to-tasks (same pattern as task breakdown, not yet built),
+auth + real sync engine, full design-token/component-library pass, the
+native-shell build-out `docs/NATIVE_SHELL_CONTRACT.md` documents but
+doesn't implement, Apple Calendar revival (code preserved, not wired in), a
+systematic accessibility audit beyond the specific bugs fixed so far.

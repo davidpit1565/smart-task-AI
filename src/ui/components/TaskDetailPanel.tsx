@@ -42,6 +42,8 @@ interface TaskDetailPanelProps {
   goals: Goal[];
   calendarEvents: CalendarEvent[];
   connectedCalendarId: string | null;
+  /** Infinity for premium — see src/core/entitlement.types.ts. */
+  aiQuotaRemaining: number;
   onSave(id: string, patch: Partial<Task>): void;
   onDelete(id: string): void;
   onClose(): void;
@@ -50,6 +52,8 @@ interface TaskDetailPanelProps {
   onScheduleTask(id: string, input: { connectedCalendarId: string; start: string; end: string }): Promise<void>;
   onUnscheduleTask(id: string): Promise<void>;
   onStartFocus(id: string): void;
+  /** Call only after a successful AI breakdown — never on a failed call. */
+  onAiBreakdownUsed(): Promise<void>;
 }
 
 export function TaskDetailPanel({
@@ -59,6 +63,7 @@ export function TaskDetailPanel({
   goals,
   calendarEvents,
   connectedCalendarId,
+  aiQuotaRemaining,
   onSave,
   onDelete,
   onClose,
@@ -67,6 +72,7 @@ export function TaskDetailPanel({
   onScheduleTask,
   onUnscheduleTask,
   onStartFocus,
+  onAiBreakdownUsed,
 }: TaskDetailPanelProps) {
   const { t } = useTranslation();
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -145,6 +151,7 @@ export function TaskDetailPanel({
       const suggestions = await requestTaskBreakdown(title, description);
       setBreakdownSuggestions(suggestions);
       setBreakdownChecked(suggestions.map(() => true));
+      await onAiBreakdownUsed();
     } catch (error) {
       setBreakdownError(error instanceof Error ? error.message : 'AI breakdown failed.');
     } finally {
@@ -562,30 +569,53 @@ export function TaskDetailPanel({
             )}
             <QuickAddBar onAdd={(subtaskTitle) => onAddSubtask(task.id, subtaskTitle)} placeholder={t('task.detail.subtasks.placeholder')} />
 
-            <button
-              type="button"
-              onClick={handleBreakdown}
-              disabled={breakdownLoading}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                width: '100%',
-                marginTop: 8,
-                padding: '9px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px dashed var(--color-border-strong)',
-                background: 'none',
-                color: 'var(--color-accent)',
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: breakdownLoading ? 'default' : 'pointer',
-              }}
-            >
-              <SparkleIcon width={14} height={14} />
-              {breakdownLoading ? t('task.detail.breakdown.loading') : t('task.detail.breakdown.action')}
-            </button>
+            {aiQuotaRemaining > 0 ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleBreakdown}
+                  disabled={breakdownLoading}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    width: '100%',
+                    marginTop: 8,
+                    padding: '9px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px dashed var(--color-border-strong)',
+                    background: 'none',
+                    color: 'var(--color-accent)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: breakdownLoading ? 'default' : 'pointer',
+                  }}
+                >
+                  <SparkleIcon width={14} height={14} />
+                  {breakdownLoading ? t('task.detail.breakdown.loading') : t('task.detail.breakdown.action')}
+                </button>
+                {Number.isFinite(aiQuotaRemaining) && (
+                  <p style={{ color: 'var(--color-text-faint)', fontSize: 11.5, margin: '4px 0 0', textAlign: 'center' }}>
+                    {t('task.detail.breakdown.quotaRemaining').replace('{count}', String(aiQuotaRemaining))}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p
+                style={{
+                  color: 'var(--color-text-muted)',
+                  fontSize: 12.5,
+                  margin: '8px 0 0',
+                  padding: '9px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px dashed var(--color-border-strong)',
+                  textAlign: 'center',
+                }}
+              >
+                {t('task.detail.breakdown.quotaExceeded')}
+              </p>
+            )}
 
             {breakdownError && (
               <p style={{ color: 'var(--color-danger)', fontSize: 12.5, margin: '6px 0 0' }}>{breakdownError}</p>

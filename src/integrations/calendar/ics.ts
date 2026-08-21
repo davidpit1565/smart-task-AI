@@ -157,7 +157,7 @@ export function serializeIcsEvent(event: {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Smart Tasks AI//EN',
+    'PRODID:-//Unknot//EN',
     'BEGIN:VEVENT',
     `UID:${event.uid}`,
     `DTSTAMP:${dtstamp}`,

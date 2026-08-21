@@ -211,8 +211,23 @@ const en = {
   'action.undo': 'Undo',
   'action.restore': 'Restore',
   'action.permanentlyDelete': 'Delete permanently',
+  'action.dismiss': 'Dismiss',
   'toast.completed': 'Task completed',
   'toast.deleted': 'Task deleted',
+
+  'onboarding.page1.subtitle': "AI that untangles the task you're stuck on, in a design that feels like Apple built it.",
+  'onboarding.page2.title': 'Break a stuck task into small steps',
+  'onboarding.page2.subtitle': "Open any task and tap \"Break down with AI\" — it turns one overwhelming task into a short list you can actually start.",
+  'onboarding.example.task': 'Plan my sister\'s birthday party',
+  'onboarding.example.step1': 'Pick a date and guest list',
+  'onboarding.example.step2': 'Book a venue',
+  'onboarding.example.step3': 'Send invitations',
+  'onboarding.next': 'Next',
+  'onboarding.skip': 'Skip',
+  'onboarding.getStarted': 'Get started',
+
+  'today.aiHero.title': "Stuck on something big?",
+  'today.aiHero.subtitle': 'Open any task and tap "Break down with AI" to turn it into small, doable steps.',
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -423,8 +438,23 @@ const he: Record<TranslationKey, string> = {
   'action.undo': 'ביטול',
   'action.restore': 'שחזור',
   'action.permanentlyDelete': 'מחיקה לצמיתות',
+  'action.dismiss': 'סגירה',
   'toast.completed': 'המשימה הושלמה',
   'toast.deleted': 'המשימה נמחקה',
+
+  'onboarding.page1.subtitle': 'AI שמפרק את המשימה שאתה תקוע עליה, בעיצוב שמרגיש כמו ש-Apple בעצמה בנתה אותו.',
+  'onboarding.page2.title': 'לפרק משימה תקועה לצעדים קטנים',
+  'onboarding.page2.subtitle': 'תפתח כל משימה ותלחץ על "פירוק עם AI" — היא הופכת ממשימה גדולה ומאיימת לרשימה קצרה שאפשר פשוט להתחיל בה.',
+  'onboarding.example.task': 'לתכנן מסיבת יומולדת לאחות שלי',
+  'onboarding.example.step1': 'לבחור תאריך ורשימת מוזמנים',
+  'onboarding.example.step2': 'להזמין מקום',
+  'onboarding.example.step3': 'לשלוח הזמנות',
+  'onboarding.next': 'הבא',
+  'onboarding.skip': 'דלג',
+  'onboarding.getStarted': 'להתחיל',
+
+  'today.aiHero.title': 'תקוע על משהו גדול?',
+  'today.aiHero.subtitle': 'תפתח כל משימה ותלחץ "פירוק עם AI" כדי להפוך אותה לצעדים קטנים וברי-ביצוע.',
 };
 
 export const dictionaries: Record<Language, Record<TranslationKey, string>> = { en, he };

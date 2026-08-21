@@ -15,6 +15,7 @@ import { InboxScreen } from '@/ui/screens/InboxScreen';
 import { ProjectsScreen } from '@/ui/screens/ProjectsScreen';
 import { ProjectDetailScreen } from '@/ui/screens/ProjectDetailScreen';
 import { MoreScreen, type MoreView } from '@/ui/screens/MoreScreen';
+import { OnboardingScreen } from '@/ui/screens/OnboardingScreen';
 import { CompletedScreen } from '@/ui/screens/CompletedScreen';
 import { ArchivedScreen } from '@/ui/screens/ArchivedScreen';
 import { PremiumScreen } from '@/ui/screens/PremiumScreen';
@@ -34,6 +35,14 @@ export function App() {
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [deepLinkHandled, setDeepLinkHandled] = useState(false);
   const [moreView, setMoreView] = useState<MoreView | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => typeof localStorage === 'undefined' || localStorage.getItem('unknot.onboardingSeen') !== 'true',
+  );
+
+  function finishOnboarding() {
+    localStorage.setItem('unknot.onboardingSeen', 'true');
+    setShowOnboarding(false);
+  }
 
   const tasks = useTaskStore((s) => s.tasks);
   const loaded = useTaskStore((s) => s.loaded);
@@ -333,6 +342,8 @@ export function App() {
       {focusTask && <FocusModeScreen task={focusTask} onFinish={handleFinishFocus} />}
 
       {toast && <UndoToast messageKey={`toast.${toast}`} onUndo={handleUndo} onDismiss={() => setToast(null)} />}
+
+      {showOnboarding && <OnboardingScreen onFinish={finishOnboarding} />}
     </div>
   );
 }

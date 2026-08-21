@@ -33,9 +33,7 @@ export function PremiumScreen({ tier, aiQuotaRemaining, onBack }: PremiumScreenP
         </p>
         {tier === 'free' && (
           <p style={{ margin: '8px 0 0', fontSize: 13.5, color: 'var(--color-text-muted)' }}>
-            {t('premium.quotaSummary')
-              .replace('{remaining}', String(aiQuotaRemaining))
-              .replace('{total}', String(FREE_MONTHLY_AI_QUOTA))}
+            {t('premium.quotaSummary', { remaining: aiQuotaRemaining, total: FREE_MONTHLY_AI_QUOTA })}
           </p>
         )}
       </div>

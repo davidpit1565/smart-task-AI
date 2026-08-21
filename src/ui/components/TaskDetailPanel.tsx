@@ -597,7 +597,7 @@ export function TaskDetailPanel({
                 </button>
                 {Number.isFinite(aiQuotaRemaining) && (
                   <p style={{ color: 'var(--color-text-faint)', fontSize: 11.5, margin: '4px 0 0', textAlign: 'center' }}>
-                    {t('task.detail.breakdown.quotaRemaining').replace('{count}', String(aiQuotaRemaining))}
+                    {t('task.detail.breakdown.quotaRemaining', { count: aiQuotaRemaining })}
                   </p>
                 )}
               </>

@@ -5,6 +5,14 @@ product spec, non-negotiable design rules, and the reconciled phase
 roadmap (extends this file, doesn't replace it) — read that first when
 picking up work, then this file for what's actually shipped so far.
 
+See [`docs/STRATEGY.md`](./docs/STRATEGY.md) for the market/competitor
+research, target personas, branding direction, App Store readiness
+checklist (PWA-to-native path, iOS 26 Liquid Glass HIG, submission
+requirements), and monetization model recommendation — read before
+starting brand-, App-Store-, or pricing-related work. Open decisions
+(final name, pricing model sign-off, native-shell scope) are listed at
+the end of that doc; don't assume they're settled without checking.
+
 ## Stack decision (locked for Phase 1, revisit only with a measured reason)
 
 Web PWA — Vite + React + TypeScript, offline-first via IndexedDB (Dexie).

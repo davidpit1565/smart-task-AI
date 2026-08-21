@@ -3,6 +3,7 @@ import { selectGreetingPeriod, selectInboxTasks, selectOverdueTasks, selectToday
 import { suggestTasks } from '@/core/dailyPlanner';
 import { useTranslation } from '@/i18n/LanguageContext';
 import type { ScreenId } from '@/ui/components/BottomNav';
+import { AiHeroCard } from '@/ui/components/AiHeroCard';
 import { DailySuggestionCard } from '@/ui/components/DailySuggestionCard';
 import { HomeTileGrid } from '@/ui/components/HomeTileGrid';
 import { ProgressBar } from '@/ui/components/ProgressBar';
@@ -32,6 +33,8 @@ export function TodayScreen({ tasks, onToggleComplete, onOpen, onReorder, onNavi
         <h1 style={{ fontSize: 23, margin: '0 0 12px' }}>{greeting}</h1>
         <HomeTileGrid todayCount={today.length} overdueCount={overdue.length} inboxCount={inboxCount} onNavigate={onNavigate} />
       </div>
+
+      <AiHeroCard />
 
       {progress.total > 0 && (
         <div

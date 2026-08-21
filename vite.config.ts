@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Smart Tasks AI',
-        short_name: 'SmartTasks',
-        description: 'AI-assisted smart task management and productivity app',
+        name: 'Unknot',
+        short_name: 'Unknot',
+        description: "AI that untangles the task you're stuck on",
         theme_color: '#0A0E14',
         background_color: '#0A0E14',
         display: 'standalone',

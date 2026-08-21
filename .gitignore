@@ -6,3 +6,19 @@ dist-ssr
 coverage
 .vite
 *.tsbuildinfo
+
+# Capacitor native shells: commit the project files (Xcode/Gradle config,
+# any native customization), never generated build output or the copied
+# web-asset bundle (`npx cap sync` regenerates both from `dist/`).
+android/app/build
+android/.gradle
+android/build
+android/local.properties
+android/app/src/main/assets/public
+ios/App/App/public
+ios/App/Pods
+ios/App/build
+ios/App/DerivedData
+ios/App/App.xcworkspace/xcuserdata
+ios/App/App.xcodeproj/xcuserdata
+ios/App/App.xcodeproj/project.xcworkspace/xcuserdata

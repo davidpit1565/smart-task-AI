@@ -5,6 +5,19 @@ product spec, non-negotiable design rules, and the reconciled phase
 roadmap (extends this file, doesn't replace it) — read that first when
 picking up work, then this file for what's actually shipped so far.
 
+See [`docs/STRATEGY.md`](./docs/STRATEGY.md) for the market/competitor
+research, target personas, branding direction, App Store readiness
+checklist (PWA-to-native path, iOS 26 Liquid Glass HIG, submission
+requirements), and monetization model recommendation — read before
+starting brand-, App-Store-, or pricing-related work.
+
+See [`docs/PRODUCT_GOAL.md`](./docs/PRODUCT_GOAL.md) for the settled
+answers: chosen brand name (**Unknot**), tagline, and the decision to
+build the native shell to maximum depth (Capacitor + native push +
+Face ID + Share Extension + Widgets + Sign in with Apple) rather than a
+thin wrapper. Pricing-model sign-off is still open — don't assume it's
+approved without checking that doc's §7.
+
 ## Stack decision (locked for Phase 1, revisit only with a measured reason)
 
 Web PWA — Vite + React + TypeScript, offline-first via IndexedDB (Dexie).
@@ -384,3 +397,49 @@ auth + real sync engine, full design-token/component-library pass, the
 native-shell build-out `docs/NATIVE_SHELL_CONTRACT.md` documents but
 doesn't implement, Apple Calendar revival (code preserved, not wired in), a
 systematic accessibility audit beyond the specific bugs fixed so far.
+
+## Rebrand to Unknot + Capacitor scaffold + monetization (this batch)
+
+David approved the pricing model and asked to build everything buildable
+right now. Three real, tested pieces, plus one correction to earlier
+research:
+
+- **Rebrand**: every user-visible name (`index.html`, PWA manifest,
+  `package.json`, README, `PRODID`/User-Agent strings) changed from "Smart
+  Tasks AI" to **Unknot**. Deliberately **not** touched: the Dexie database
+  name (`smart-tasks-ai` in `src/data/db.ts`) — renaming that would silently
+  orphan David's existing local task data (this app has been live-tested
+  against his real iCloud account since the CalDAV work). The class name
+  alone was left too, to avoid a diff that touches the one string that
+  actually matters right next to ones that don't.
+- **Capacitor native-shell scaffold** (`docs/NATIVE_SHELL_CONTRACT.md` has
+  the honest detail): `@capacitor/core`/`cli`/`ios`/`android` installed,
+  `capacitor.config.ts` added, `npm run cap:sync` (build + `cap sync`)
+  verified working end-to-end in this Linux container, `android/` and
+  `ios/` native projects committed. This is genuinely real, not a mockup —
+  and still genuinely blocked from going further: no Mac/Xcode here means
+  the iOS project can't be opened, built, signed, or run, and adding push
+  notifications/Face ID/a Share Extension/widgets needs someone with a Mac
+  to do that native step.
+- **Monetization, actually implemented** (not just recommended):
+  `src/core/entitlement.types.ts` (pure quota logic, monthly reset),
+  `src/core/entitlement.repository.ts` + `src/data/dexieEntitlementRepository.ts`
+  (new `entitlement`/`aiUsage` Dexie tables, db version 5), `src/store/entitlementStore.ts`.
+  Free tier gets 5 AI breakdowns/month, enforced in `TaskDetailPanel` (shows
+  remaining count, blocks with an explanatory message once exhausted, only
+  decrements on a *successful* breakdown so failed calls don't burn quota).
+  A new Premium screen (More → Premium) shows the current plan and quota.
+  Actual purchasing is honestly gated — "not wired up yet" — since real
+  Apple IAP needs StoreKit (native-only, blocked on the same Mac/Xcode gap
+  above) and no payment processor is configured; same honest-gate shape as
+  the `ANTHROPIC_API_KEY`/OAuth Client ID gates.
+- **Correction**: `docs/STRATEGY.md`/`docs/PRODUCT_GOAL.md` originally
+  claimed Guideline 4.8 (Sign in with Apple) was mandatory here because the
+  app has Google/Microsoft OAuth. On closer reading, 4.8 applies to a login
+  service used to set up an app's *primary account* — this app is
+  local-first with no account system at all; the OAuth here only grants
+  calendar-data access. 4.8 most likely doesn't apply, so Sign in with
+  Apple wasn't built. Revisit if a real account/sync system is added later.
+- 10 new unit tests (175 total, up from 165), full gate green
+  (`typecheck`/`test`/`build`/`lint`), `npx cap sync` re-verified after the
+  final build.

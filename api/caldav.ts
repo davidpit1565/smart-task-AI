@@ -70,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         Authorization: authHeader,
         // Apple's CalDAV service has been observed treating requests with no/generic
         // User-Agent as bot traffic. A descriptive one is standard CalDAV client practice.
-        'User-Agent': 'SmartTasksAI/1.0 (+https://smart-task-ai.vercel.app) CalDAV-Client',
+        'User-Agent': 'Unknot/1.0 (+https://smart-task-ai.vercel.app) CalDAV-Client',
       },
       body: payload.body ?? undefined,
     });

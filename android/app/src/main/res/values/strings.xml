@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Unknot</string>
+    <string name="title_activity_main">Unknot</string>
+    <string name="package_name">com.unknot.app</string>
+    <string name="custom_url_scheme">com.unknot.app</string>
+</resources>

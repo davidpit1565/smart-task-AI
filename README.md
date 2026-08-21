@@ -1,10 +1,11 @@
-# Smart Tasks AI
+# Unknot
 
-A modern, AI-assisted task management and productivity app — inspired by the
-best parts of Todoist, Things 3, and Apple Reminders, with its own visual
-identity. Not a basic to-do list: projects, goals, calendar integrations,
-smart scheduling, and an AI assistant are all part of the plan (see
-[`PROJECT_STATE.md`](./PROJECT_STATE.md) for the phased roadmap).
+An AI-assisted task manager whose one job is the moment a task is too big or
+too vague to start: it untangles it into small, concrete steps. Built in an
+Apple Liquid Glass–inspired visual identity, not a generic list app. See
+[`docs/PRODUCT_GOAL.md`](./docs/PRODUCT_GOAL.md) for what the app is, who
+it's for, and the branding/pricing/App-Store decisions behind it, and
+[`PROJECT_STATE.md`](./PROJECT_STATE.md) for the phased build roadmap.
 
 ## Stack
 

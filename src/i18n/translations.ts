@@ -48,6 +48,8 @@ const en = {
   'task.detail.breakdown.previewTitle': 'Suggested subtasks — review before adding',
   'task.detail.breakdown.add': 'Add selected',
   'task.detail.breakdown.cancel': 'Cancel',
+  'task.detail.breakdown.quotaRemaining': '{count} free AI breakdowns left this month',
+  'task.detail.breakdown.quotaExceeded': "You've used this month's free AI breakdowns. Unknot Premium unlocks unlimited AI breakdowns — see More → Premium.",
   'projectDetail.nameLabel': 'Project name',
   'goals.nameLabel': 'Goal name',
 
@@ -164,6 +166,16 @@ const en = {
   'more.insights': 'Insights',
   'more.completed': 'Completed tasks',
   'more.archived': 'Archived',
+  'more.premium': 'Premium',
+
+  'premium.title': 'Premium',
+  'premium.currentPlan': 'Current plan',
+  'premium.planFree': 'Free',
+  'premium.planPremium': 'Premium',
+  'premium.quotaSummary': '{remaining} of {total} free AI breakdowns left this month.',
+  'premium.upgradeTitle': 'Unlimited AI breakdowns',
+  'premium.upgradeBenefits': 'Premium removes the monthly AI-breakdown limit and unlocks advanced calendar sync.',
+  'premium.notConfiguredYet': "Purchasing isn't wired up yet — this will use Apple's In-App Purchase once the app ships on the App Store. See docs/STRATEGY.md.",
 
   'insights.title': 'Insights',
   'insights.streak': 'Day streak',
@@ -248,6 +260,8 @@ const he: Record<TranslationKey, string> = {
   'task.detail.breakdown.previewTitle': 'תת-משימות מוצעות — סקירה לפני הוספה',
   'task.detail.breakdown.add': 'הוספת הנבחרות',
   'task.detail.breakdown.cancel': 'ביטול',
+  'task.detail.breakdown.quotaRemaining': 'נותרו {count} פירוקי-AI חינמיים החודש',
+  'task.detail.breakdown.quotaExceeded': 'ניצלת את פירוקי ה-AI החינמיים לחודש הזה. Unknot Premium מבטל את ההגבלה — ראה עוד ← פרימיום.',
   'projectDetail.nameLabel': 'שם הפרויקט',
   'goals.nameLabel': 'שם המטרה',
 
@@ -364,6 +378,16 @@ const he: Record<TranslationKey, string> = {
   'more.insights': 'תובנות',
   'more.completed': 'משימות שהושלמו',
   'more.archived': 'ארכיון',
+  'more.premium': 'פרימיום',
+
+  'premium.title': 'פרימיום',
+  'premium.currentPlan': 'המסלול הנוכחי',
+  'premium.planFree': 'חינמי',
+  'premium.planPremium': 'פרימיום',
+  'premium.quotaSummary': 'נותרו {remaining} מתוך {total} פירוקי-AI חינמיים החודש.',
+  'premium.upgradeTitle': 'פירוקי-AI ללא הגבלה',
+  'premium.upgradeBenefits': 'פרימיום מבטל את המכסה החודשית לפירוקי-AI ופותח סנכרון יומן מתקדם.',
+  'premium.notConfiguredYet': 'הרכישה עדיין לא מחוברת — זה יעבוד דרך In-App Purchase של Apple ברגע שהאפליקציה תעלה ל-App Store. ראה docs/STRATEGY.md.',
 
   'insights.title': 'תובנות',
   'insights.streak': 'ימי רצף',

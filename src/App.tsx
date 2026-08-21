@@ -5,6 +5,7 @@ import { useTaskStore } from '@/store/taskStore';
 import { useProjectStore } from '@/store/projectStore';
 import { useGoalStore } from '@/store/goalStore';
 import { useCalendarStore } from '@/store/calendarStore';
+import { useEntitlementStore } from '@/store/entitlementStore';
 import { BottomNav, type ScreenId } from '@/ui/components/BottomNav';
 import { TaskDetailPanel } from '@/ui/components/TaskDetailPanel';
 import { FocusModeScreen } from '@/ui/components/FocusModeScreen';
@@ -16,6 +17,7 @@ import { ProjectDetailScreen } from '@/ui/screens/ProjectDetailScreen';
 import { MoreScreen, type MoreView } from '@/ui/screens/MoreScreen';
 import { CompletedScreen } from '@/ui/screens/CompletedScreen';
 import { ArchivedScreen } from '@/ui/screens/ArchivedScreen';
+import { PremiumScreen } from '@/ui/screens/PremiumScreen';
 import { SearchScreen } from '@/ui/screens/SearchScreen';
 import { GoalsScreen } from '@/ui/screens/GoalsScreen';
 import { GoalDetailScreen } from '@/ui/screens/GoalDetailScreen';
@@ -79,12 +81,18 @@ export function App() {
   const deleteEventForTask = useCalendarStore((s) => s.deleteEventForTask);
   const linkEventToTask = useCalendarStore((s) => s.linkEventToTask);
 
+  const entitlementTier = useEntitlementStore((s) => s.tier);
+  const aiQuotaRemaining = useEntitlementStore((s) => s.remainingAiQuota);
+  const loadEntitlement = useEntitlementStore((s) => s.load);
+  const recordAiBreakdownUse = useEntitlementStore((s) => s.recordAiBreakdownUse);
+
   useEffect(() => {
     load();
     loadProjects();
     loadGoals();
     loadCalendar();
-  }, [load, loadProjects, loadGoals, loadCalendar]);
+    loadEntitlement();
+  }, [load, loadProjects, loadGoals, loadCalendar, loadEntitlement]);
 
   // Handles Web Share Target payloads and install-shortcut/task deep links — see core/deepLink.ts.
   useEffect(() => {
@@ -292,6 +300,8 @@ export function App() {
             <CompletedScreen tasks={nonTrashedTasks} onBack={() => setMoreView(null)} onUncomplete={uncompleteTask} />
           ) : moreView === 'archived' ? (
             <ArchivedScreen tasks={nonTrashedTasks} onBack={() => setMoreView(null)} onRestore={restoreTask} />
+          ) : moreView === 'premium' ? (
+            <PremiumScreen tier={entitlementTier} aiQuotaRemaining={aiQuotaRemaining} onBack={() => setMoreView(null)} />
           ) : (
             <MoreScreen tasks={nonTrashedTasks} onOpen={setMoreView} />
           ))}
@@ -307,6 +317,8 @@ export function App() {
           goals={goals}
           calendarEvents={calendarEvents}
           connectedCalendarId={defaultConnectedCalendarId}
+          aiQuotaRemaining={aiQuotaRemaining}
+          onAiBreakdownUsed={recordAiBreakdownUse}
           onSave={(id, patch) => updateTask(id, patch)}
           onDelete={handleDelete}
           onClose={() => setOpenTaskId(null)}

@@ -9,9 +9,14 @@ See [`docs/STRATEGY.md`](./docs/STRATEGY.md) for the market/competitor
 research, target personas, branding direction, App Store readiness
 checklist (PWA-to-native path, iOS 26 Liquid Glass HIG, submission
 requirements), and monetization model recommendation — read before
-starting brand-, App-Store-, or pricing-related work. Open decisions
-(final name, pricing model sign-off, native-shell scope) are listed at
-the end of that doc; don't assume they're settled without checking.
+starting brand-, App-Store-, or pricing-related work.
+
+See [`docs/PRODUCT_GOAL.md`](./docs/PRODUCT_GOAL.md) for the settled
+answers: chosen brand name (**Unknot**), tagline, and the decision to
+build the native shell to maximum depth (Capacitor + native push +
+Face ID + Share Extension + Widgets + Sign in with Apple) rather than a
+thin wrapper. Pricing-model sign-off is still open — don't assume it's
+approved without checking that doc's §7.
 
 ## Stack decision (locked for Phase 1, revisit only with a measured reason)
 
